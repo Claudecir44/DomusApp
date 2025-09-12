@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cadastro de Funcionário"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:textColor="@android:color/black"/>
+
+        <ImageView
+            android:id="@+id/imageFuncionario"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@android:drawable/ic_menu_camera"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/darker_gray"
+            android:contentDescription="Foto do Funcionário" />
+
+        <!-- Campos pessoais e endereço -->
+        <EditText android:id="@+id/editNomeFuncionario" android:hint="Nome" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editRuaFuncionario" android:hint="Rua" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editNumeroFuncionario" android:hint="Nº" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editBairroFuncionario" android:hint="Bairro" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editCepFuncionario" android:hint="Cep" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editCidadeFuncionario" android:hint="Cidade" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editEstadoFuncionario" android:hint="Estado" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editPaisFuncionario" android:hint="País" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editTelefoneFuncionario" android:hint="Telefone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editEmailFuncionario" android:hint="Email" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+
+        <!-- Campos profissionais -->
+        <EditText android:id="@+id/editRGFuncionario" android:hint="RG" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editCPFFuncionario" android:hint="CPF" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editCargaHoraria" android:hint="Carga Horária Mensal" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editTurno" android:hint="Turno Diário" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editHoraEntrada" android:hint="Hora de Entrada" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="time" android:layout_marginBottom="8dp"/>
+        <EditText android:id="@+id/editHoraSaida" android:hint="Hora de Saída" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="time" android:layout_marginBottom="12dp"/>
+
+        <Button android:id="@+id/buttonSalvarFuncionario" android:text="Salvar" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</ScrollView>

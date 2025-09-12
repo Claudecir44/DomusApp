@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#FFFFFF"
+    android:elevation="2dp"
+    android:layout_marginBottom="8dp"
+    android:clipToPadding="false">
+
+    <!-- Imagem do morador -->
+    <ImageView
+        android:id="@+id/imageMoradorItem"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center_horizontal"
+        android:src="@android:drawable/ic_menu_camera"
+        android:scaleType="centerCrop"
+        android:contentDescription="Imagem do morador"
+        android:background="@android:color/darker_gray"
+        android:layout_marginBottom="12dp"
+        android:clipToOutline="true"
+        android:cropToPadding="true"
+        android:outlineProvider="background"
+        android:padding="2dp" />
+
+    <!-- Dados do morador -->
+    <TextView
+        android:id="@+id/tvMoradorDados"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dados do morador"
+        android:textSize="16sp"
+        android:padding="6dp"
+        android:textColor="#000000" />
+
+    <!-- Botões -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnEditarMorador"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Editar"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btnExcluirMorador"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Excluir"
+            android:layout_marginStart="4dp"/>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,121 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:id="@+id/containerCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@android:drawable/dialog_holo_light_frame">
+
+        <!-- Data e Hora -->
+        <TextView
+            android:id="@+id/tvDataHora"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Data e Hora"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="#333333"/>
+
+        <!-- Assunto -->
+        <TextView
+            android:id="@+id/tvAssunto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Assunto"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="4dp"
+            android:textColor="#000000"/>
+
+        <!-- Conteúdo expandido -->
+        <LinearLayout
+            android:id="@+id/layoutExpandido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/tvLocal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Local"
+                android:textSize="14sp"
+                android:textColor="#333333"
+                android:layout_marginTop="4dp"/>
+
+            <TextView
+                android:id="@+id/tvDescricao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Descrição"
+                android:textSize="14sp"
+                android:textColor="#333333"
+                android:layout_marginTop="4dp"/>
+
+            <!-- Botão para mostrar anexos -->
+            <TextView
+                android:id="@+id/btnMostrarAnexos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📎 Anexos disponíveis"
+                android:textColor="#00796B"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:background="?android:selectableItemBackground" />
+
+            <!-- Layout dos anexos -->
+            <LinearLayout
+                android:id="@+id/layoutAnexos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="4dp" />
+
+            <!-- Layout dos botões de ação -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
+
+                <!-- Botão Editar -->
+                <ImageButton
+                    android:id="@+id/btnEditar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    android:contentDescription="Editar assembleia"
+                    android:background="?android:selectableItemBackground"
+                    android:padding="8dp"
+                    android:tint="#1976D2" />
+
+                <!-- Botão Excluir -->
+                <ImageButton
+                    android:id="@+id/btnExcluir"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:contentDescription="Excluir assembleia"
+                    android:background="?android:selectableItemBackground"
+                    android:padding="8dp"
+                    android:tint="#F44336"
+                    android:layout_marginStart="16dp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

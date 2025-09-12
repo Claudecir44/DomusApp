@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Título -->
+        <TextView
+            android:id="@+id/textTituloManutencao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cadastro de Manutenções"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Campos do formulário -->
+        <EditText
+            android:id="@+id/editTipoManutencao"
+            android:hint="Tipo de Manutenção"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editDataHora"
+            android:hint="Data e Hora"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="datetime"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editLocal"
+            android:hint="Local da Manutenção"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editServico"
+            android:hint="Serviço Realizado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editResponsavel"
+            android:hint="Nome de quem realizou"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editValor"
+            android:hint="Valor do Serviço"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/editNotas"
+            android:hint="Notas / Observações"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Botão anexar documento -->
+        <Button
+            android:id="@+id/buttonAnexar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Anexar Documento (PDF, Word, Excel)"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#FFA500"/>
+
+        <!-- Botão salvar -->
+        <Button
+            android:id="@+id/buttonSalvarManutencao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvar"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#90EE90"/>
+
+        <!-- Botão lista de manutenções -->
+        <Button
+            android:id="@+id/buttonListaManutencao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lista de Manutenções"
+            android:backgroundTint="#ADD8E6"/>
+
+    </LinearLayout>
+</ScrollView>

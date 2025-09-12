@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutOcorrenciaItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <!-- Cabeçalho: Tipo e Data -->
+    <TextView
+        android:id="@+id/textTipoOcorrencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:text="Tipo"/>
+
+    <TextView
+        android:id="@+id/textDataHoraOcorrencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Data/Hora"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp"/>
+
+    <!-- Layout Expandido -->
+    <LinearLayout
+        android:id="@+id/layoutExpandido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingTop="4dp">
+
+        <!-- Descrição -->
+        <TextView
+            android:id="@+id/textDescricaoTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Descrição"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/textDescricaoExpandida"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Descrição completa"/>
+
+        <!-- Envolvidos -->
+        <TextView
+            android:id="@+id/textEnvolvidosTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Envolvidos"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"/>
+        <TextView
+            android:id="@+id/textEnvolvidos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Anexos -->
+        <TextView
+            android:id="@+id/textAnexosTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Anexos"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"/>
+        <LinearLayout
+            android:id="@+id/layoutAnexos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="2dp"/>
+
+        <!-- Botões Editar / Excluir -->
+        <LinearLayout
+            android:id="@+id/layoutBotoes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="4dp"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/buttonEditar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Editar"/>
+
+            <Button
+                android:id="@+id/buttonExcluir"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Excluir"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

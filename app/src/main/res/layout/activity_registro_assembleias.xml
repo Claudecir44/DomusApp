@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Título -->
+        <TextView
+            android:id="@+id/tituloRegistro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registro de Assembleias"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Data e Hora -->
+        <EditText
+            android:id="@+id/editDataHora"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Data e Hora"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <!-- Assunto -->
+        <EditText
+            android:id="@+id/editAssunto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Assunto"
+            android:padding="12dp"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <!-- Local -->
+        <EditText
+            android:id="@+id/editLocal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Local"
+            android:padding="12dp"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <!-- Descrição -->
+        <EditText
+            android:id="@+id/editDescricao"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Descrição"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:padding="12dp"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <!-- Botão Anexar Arquivos -->
+        <Button
+            android:id="@+id/buttonAnexarArquivos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Anexar Arquivos (PDF, Word, Excel)"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#061F7C"
+            android:textColor="@android:color/white"/>
+
+        <!-- Container para anexos dinamicamente -->
+        <LinearLayout
+            android:id="@+id/layoutAnexosContainer"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <!-- RecyclerView para mostrar anexos em lista, opcional -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerAnexos"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp" />
+
+        <!-- Botão Salvar -->
+        <Button
+            android:id="@+id/buttonSalvar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvar"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#061F7C"
+            android:textColor="@android:color/white"/>
+
+        <!-- Botão Lista de Assembleias abaixo do Salvar -->
+        <Button
+            android:id="@+id/buttonListaAssembleias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lista de Assembleias"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#061F7C"
+            android:textColor="@android:color/white"/>
+
+    </LinearLayout>
+</ScrollView>

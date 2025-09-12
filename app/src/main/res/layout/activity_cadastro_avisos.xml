@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Título centralizado -->
+        <TextView
+            android:id="@+id/tvTituloAvisos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Avisos"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Data e Hora -->
+        <EditText
+            android:id="@+id/editDataHora"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Data e Hora"
+            android:focusable="false"
+            android:clickable="true"/>
+
+        <!-- Assunto -->
+        <EditText
+            android:id="@+id/editAssunto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Assunto"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Descrição -->
+        <EditText
+            android:id="@+id/editDescricao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descrição"
+            android:inputType="textMultiLine"
+            android:lines="4"
+            android:gravity="top"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Anexos Existentes (visível apenas na edição) -->
+        <TextView
+            android:id="@+id/tvAnexosExistentes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Anexos Existentes"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:padding="8dp"
+            android:layout_marginTop="8dp"/>
+
+        <LinearLayout
+            android:id="@+id/layoutAnexosExistentes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="8dp"/>
+
+        <!-- Layout para novos anexos -->
+        <LinearLayout
+            android:id="@+id/layoutAnexos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Botão Selecionar Arquivos -->
+        <Button
+            android:id="@+id/buttonSelecionarArquivos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selecionar anexos (até 5)"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Botões Salvar e Voltar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/buttonSalvar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Salvar"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/buttonVoltarLista"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lista de Avisos"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

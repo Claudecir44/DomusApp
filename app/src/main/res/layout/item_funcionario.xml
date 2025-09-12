@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="@android:color/darker_gray"
+    android:layout_marginBottom="8dp">
+
+    <!-- Linha com foto e dados -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Foto do funcionário -->
+        <ImageView
+            android:id="@+id/ivFuncionarioFoto"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="12dp"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/ic_menu_camera"
+            android:contentDescription="Foto do Funcionário"
+            android:background="@android:color/black" />
+
+        <!-- Dados do funcionário -->
+        <TextView
+            android:id="@+id/tvFuncionarioDados"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:ellipsize="none"
+            android:scrollHorizontally="false"
+            android:text="Nome: \nRua: \nNúmero: \nBairro: \nCEP: \nCidade: \nEstado: \nPaís: \nTelefone: \nEmail: \nRG: \nCPF: \nCarga Horária: \nTurno: \nEntrada: \nSaída:" />
+    </LinearLayout>
+
+    <!-- Botões de ação -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btnEditarFuncionario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Editar"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="#90EE90"
+            android:textColor="@android:color/black" />
+
+        <Button
+            android:id="@+id/btnExcluirFuncionario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Excluir"
+            android:backgroundTint="#FF7F7F"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+</LinearLayout>

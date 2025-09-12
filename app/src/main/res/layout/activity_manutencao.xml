@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/linearLayoutManutencao"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Título -->
+        <TextView
+            android:id="@+id/textTituloManutencao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cadastro de Manutenção"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Tipo -->
+        <EditText
+            android:id="@+id/etTipo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tipo"/>
+
+        <!-- Data/Hora -->
+        <EditText
+            android:id="@+id/etDataHora"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Data e Hora"/>
+
+        <!-- Local -->
+        <EditText
+            android:id="@+id/etLocal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Local"/>
+
+        <!-- Serviço -->
+        <EditText
+            android:id="@+id/etServico"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Serviço"/>
+
+        <!-- Responsável -->
+        <EditText
+            android:id="@+id/etResponsavel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Responsável"/>
+
+        <!-- Valor -->
+        <EditText
+            android:id="@+id/etValor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Valor"
+            android:inputType="numberDecimal"/>
+
+        <!-- Botão anexar notas -->
+        <Button
+            android:id="@+id/btnAnexarManutencao"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Anexar Notas"
+            android:layout_marginTop="8dp"/>
+
+        <!-- RecyclerView para anexos -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerAnexos"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Botão salvar -->
+        <Button
+            android:id="@+id/btnSalvarManutencao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvar"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Botão lista de manutenção -->
+        <Button
+            android:id="@+id/btnListaManutencao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lista de Manutenção"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</ScrollView>
