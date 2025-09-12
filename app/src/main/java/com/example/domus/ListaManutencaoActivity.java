@@ -33,6 +33,11 @@ public class ListaManutencaoActivity extends AppCompatActivity {
 
     private void carregarLista() {
         listaManutencoes = manutencaoDAO.getTodasManutencoes();
+
+        if (listaManutencoes.isEmpty()) {
+            Toast.makeText(this, "Nenhuma manutenção cadastrada", Toast.LENGTH_SHORT).show();
+        }
+
         adapter = new ManutencaoAdapter(this, listaManutencoes, new ManutencaoAdapter.OnItemClickListener() {
             @Override
             public void onEditar(int position) {
@@ -68,5 +73,11 @@ public class ListaManutencaoActivity extends AppCompatActivity {
         });
         builder.setNegativeButton("Não", null);
         builder.show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        carregarLista(); // Recarrega a lista quando a activity retornar ao foco
     }
 }

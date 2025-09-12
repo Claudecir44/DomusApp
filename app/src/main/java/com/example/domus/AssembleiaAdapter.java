@@ -28,6 +28,7 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
     private final OnExcluirClickListener excluirListener;
     private final OnEditarClickListener editarListener;
     private final Context context;
+    private final String tipoUsuario; // Novo campo para controlar o tipo de usuário
 
     public interface OnVisualizarClickListener {
         void onVisualizar(JSONObject assembleia);
@@ -41,15 +42,18 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
         void onEditar(JSONObject assembleia);
     }
 
+    // Construtor atualizado para receber tipoUsuario
     public AssembleiaAdapter(Context context, List<JSONObject> lista,
                              OnVisualizarClickListener visualizarListener,
                              OnExcluirClickListener excluirListener,
-                             OnEditarClickListener editarListener) {
+                             OnEditarClickListener editarListener,
+                             String tipoUsuario) {
         this.context = context;
         this.lista = lista;
         this.visualizarListener = visualizarListener;
         this.excluirListener = excluirListener;
         this.editarListener = editarListener;
+        this.tipoUsuario = tipoUsuario;
     }
 
     @NonNull
@@ -86,8 +90,6 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
             layoutExpandido = itemView.findViewById(R.id.layoutExpandido);
             layoutAnexos = itemView.findViewById(R.id.layoutAnexos);
             btnExcluir = itemView.findViewById(R.id.btnExcluir);
-
-            // Novo botão Editar
             btnEditar = itemView.findViewById(R.id.btnEditar);
         }
 
@@ -96,6 +98,15 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
             tvAssunto.setText(assembleia.optString("assunto", ""));
             tvLocal.setText("Local: " + assembleia.optString("local", ""));
             tvDescricao.setText("Descrição: " + assembleia.optString("descricao", ""));
+
+            // Controlar visibilidade dos botões baseado no tipo de usuário
+            if ("morador".equalsIgnoreCase(tipoUsuario)) {
+                btnExcluir.setVisibility(View.GONE);
+                btnEditar.setVisibility(View.GONE);
+            } else {
+                btnExcluir.setVisibility(View.VISIBLE);
+                btnEditar.setVisibility(View.VISIBLE);
+            }
 
             layoutExpandido.setVisibility(View.GONE);
             layoutAnexos.setVisibility(View.GONE);
@@ -109,7 +120,11 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
             });
 
             // Clique em excluir
-            btnExcluir.setOnClickListener(v -> excluirListener.onExcluir(assembleia));
+            btnExcluir.setOnClickListener(v -> {
+                if (excluirListener != null) {
+                    excluirListener.onExcluir(assembleia);
+                }
+            });
 
             // Clique em editar
             btnEditar.setOnClickListener(v -> {
@@ -160,16 +175,25 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
                     if (file.getName().endsWith(".pdf")) tipo = "application/pdf";
                     else if (file.getName().endsWith(".doc") || file.getName().endsWith(".docx")) tipo = "application/msword";
                     else if (file.getName().endsWith(".xls") || file.getName().endsWith(".xlsx")) tipo = "application/vnd.ms-excel";
+                    else if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg")) tipo = "image/jpeg";
+                    else if (file.getName().endsWith(".png")) tipo = "image/png";
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(fileUri, tipo);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    context.startActivity(intent);
+
+                    // Verificar se há app disponível para abrir o arquivo
+                    if (intent.resolveActivity(context.getPackageManager()) != null) {
+                        context.startActivity(intent);
+                    } else {
+                        Toast.makeText(context, "Nenhum aplicativo encontrado para abrir este arquivo", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(context, "Arquivo não encontrado", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
                 Toast.makeText(context, "Erro ao abrir arquivo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
         }
     }

@@ -104,6 +104,21 @@
             android:layout_marginEnd="24dp"
             android:layout_marginTop="4dp"/>
 
+        <!-- Avisos -->
+        <Button
+            android:id="@+id/buttonAvisos"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:text="Avisos"
+            android:textSize="14sp"
+            android:backgroundTint="@color/botaoCameras"
+            app:layout_constraintTop_toBottomOf="@id/buttonListaDespesas"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="4dp"/>
+
         <!-- Lista de Avisos -->
         <Button
             android:id="@+id/buttonListaAvisos"
@@ -112,7 +127,7 @@
             android:backgroundTint="@color/botaoCameras"
             android:text="Lista de Avisos"
             android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/buttonListaDespesas"
+            app:layout_constraintTop_toBottomOf="@id/buttonAvisos"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="24dp"
@@ -208,22 +223,6 @@
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
             android:layout_marginTop="4dp"/>
-
-        <!-- Avisos -->
-        <Button
-            android:id="@+id/buttonAvisos"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:text="Avisos"
-            android:textSize="14sp"
-            android:backgroundTint="@color/botaoCameras"
-            app:layout_constraintTop_toBottomOf="@id/buttonFuncionarios"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -32,8 +32,8 @@ public class DashBoardActivity extends AppCompatActivity {
         btnListaDespesas = findViewById(R.id.buttonListaDespesas);
         btnAvisos = findViewById(R.id.buttonAvisos);
 
-        // Botão para Lista de Avisos (para moradores)
-        btnListaAvisos = findViewById(R.id.buttonListaAvisos); // Adicione este botão no seu layout XML
+        // Botão para Lista de Avisos
+        btnListaAvisos = findViewById(R.id.buttonListaAvisos);
 
         // Verifica o tipo de usuário vindo do Login
         String tipoUsuario = getIntent().getStringExtra("tipo_usuario");
@@ -61,10 +61,19 @@ public class DashBoardActivity extends AppCompatActivity {
             ajustarLayoutParaMorador();
         } else {
             // Para administradores, mostra todos os botões
+            btnCadastro.setVisibility(View.VISIBLE);
+            btnLista.setVisibility(View.VISIBLE);
+            btnBackup.setVisibility(View.VISIBLE);
+            btnRegistroOcorrencias.setVisibility(View.VISIBLE);
+            btnFuncionarios.setVisibility(View.VISIBLE);
+            btnManutencao.setVisibility(View.VISIBLE);
             btnAdministradores.setVisibility(View.VISIBLE);
+            btnAssembleias.setVisibility(View.VISIBLE);
+            btnDespesas.setVisibility(View.VISIBLE);
+            btnAvisos.setVisibility(View.VISIBLE);
             btnListaAssembleias.setVisibility(View.VISIBLE);
             btnListaDespesas.setVisibility(View.VISIBLE);
-            btnListaAvisos.setVisibility(View.VISIBLE); // Mostra também para admin
+            btnListaAvisos.setVisibility(View.VISIBLE);
         }
 
         // Configuração dos cliques
@@ -116,16 +125,24 @@ public class DashBoardActivity extends AppCompatActivity {
                 new Intent(DashBoardActivity.this, RegistroAssembleiasActivity.class)));
 
         // Botão Lista de Assembleias - ABRE ListaAssembleiasActivity (morador e admin)
-        btnListaAssembleias.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, ListaAssembleiasActivity.class)));
+        btnListaAssembleias.setOnClickListener(v -> {
+            Intent intent = new Intent(DashBoardActivity.this, ListaAssembleiasActivity.class);
+            String tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+            intent.putExtra("tipo_usuario", tipoUsuario); // Passa o tipo de usuário
+            startActivity(intent);
+        });
 
         // Botão Registro de Despesas - ABRE RegistroDespesasActivity (apenas admin)
         btnDespesas.setOnClickListener(v -> startActivity(
                 new Intent(DashBoardActivity.this, RegistroDespesasActivity.class)));
 
         // Botão Lista de Despesas - ABRE ListaDespesasActivity (morador e admin)
-        btnListaDespesas.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, ListaDespesasActivity.class)));
+        btnListaDespesas.setOnClickListener(v -> {
+            Intent intent = new Intent(DashBoardActivity.this, ListaDespesasActivity.class);
+            String tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+            intent.putExtra("tipo_usuario", tipoUsuario); // Passa o tipo de usuário
+            startActivity(intent);
+        });
 
         btnAdministradores.setOnClickListener(v -> startActivity(
                 new Intent(DashBoardActivity.this, AdministradoresActivity.class)));

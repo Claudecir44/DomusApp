@@ -1,147 +1,152 @@
 package com.example.domus;
 
 import android.content.Intent;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.format.DateFormat;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class ManutencaoActivity extends AppCompatActivity {
 
-    private EditText etTipo, etDataHora, etLocal, etServico, etResponsavel, etValor;
-    private RecyclerView recyclerViewAnexos;
-    private Button btnSalvar, btnAnexarNotas, btnListaManutencao;
+    private static final int PICK_IMAGES_REQUEST = 1;
 
+    private EditText etDataHora, etLocal, etServico, etResponsavel, etValor, etNotas;
+    private Spinner spinnerTipo;
+    private Button btnAnexarManutencao, btnSalvarManutencao, btnListaManutencao;
+    private List<Uri> anexosUris = new ArrayList<>();
     private ManutencaoDAO manutencaoDAO;
-    private List<Uri> anexosCaminhos = new ArrayList<>();
-    private AnexosAdapter anexosAdapter;
-
     private long editarId = -1;
-
-    private final ActivityResultLauncher<String[]> selecionarArquivosLauncher =
-            registerForActivityResult(new ActivityResultContracts.OpenMultipleDocuments(), uris -> {
-                if (uris != null && !uris.isEmpty()) {
-                    for (Uri uri : uris) {
-                        // Concede permissão persistente
-                        getContentResolver().takePersistableUriPermission(
-                                uri,
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        );
-                    }
-                    anexosCaminhos.addAll(uris);
-                    anexosAdapter.notifyDataSetChanged();
-                }
-            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manutencao);
 
-        // Inicialização de campos
-        etTipo = findViewById(R.id.etTipo);
+        manutencaoDAO = new ManutencaoDAO(this);
+
+        // Inicializar componentes com os IDs do XML
+        spinnerTipo = findViewById(R.id.spinnerTipo);
         etDataHora = findViewById(R.id.etDataHora);
         etLocal = findViewById(R.id.etLocal);
         etServico = findViewById(R.id.etServico);
         etResponsavel = findViewById(R.id.etResponsavel);
         etValor = findViewById(R.id.etValor);
-
-        recyclerViewAnexos = findViewById(R.id.recyclerAnexos);
-        recyclerViewAnexos.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        anexosAdapter = new AnexosAdapter(anexosCaminhos);
-        recyclerViewAnexos.setAdapter(anexosAdapter);
-
-        btnSalvar = findViewById(R.id.btnSalvarManutencao);
-        btnAnexarNotas = findViewById(R.id.btnAnexarManutencao);
+        etNotas = findViewById(R.id.etNotas);
+        btnAnexarManutencao = findViewById(R.id.btnAnexarManutencao);
+        btnSalvarManutencao = findViewById(R.id.btnSalvarManutencao);
         btnListaManutencao = findViewById(R.id.btnListaManutencao);
 
-        manutencaoDAO = new ManutencaoDAO(this);
-
-        // DateTimePicker para etDataHora
-        etDataHora.setOnClickListener(v -> mostrarDateTimePicker());
+        // Configurar spinner com os tipos de manutenção
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.tipos_manutencao, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipo.setAdapter(adapter);
 
         // Verificar se é edição
-        editarId = getIntent().getLongExtra("editarId", -1);
-        if (editarId > 0) {
+        Intent intent = getIntent();
+        if (intent.hasExtra("MANUTENCAO_ID")) {
+            editarId = intent.getLongExtra("MANUTENCAO_ID", -1);
             carregarManutencao(editarId);
         }
 
-        btnAnexarNotas.setOnClickListener(v -> {
-            String[] tipos = {
-                    "application/pdf",
-                    "application/msword",
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    "application/vnd.ms-excel",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            };
-            selecionarArquivosLauncher.launch(tipos);
+        btnAnexarManutencao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selecionarAnexos();
+            }
         });
 
-        btnSalvar.setOnClickListener(v -> salvarManutencao());
-
-        btnListaManutencao.setOnClickListener(v -> {
-            Intent intent = new Intent(ManutencaoActivity.this, ListaManutencaoActivity.class);
-            startActivity(intent);
+        btnSalvarManutencao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                salvarManutencao();
+            }
         });
-    }
 
-    private void mostrarDateTimePicker() {
-        final Calendar calendar = Calendar.getInstance();
-        new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-            calendar.set(year, month, dayOfMonth);
-            new TimePickerDialog(this, (view1, hourOfDay, minute) -> {
-                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                calendar.set(Calendar.MINUTE, minute);
-                String dataHoraFormatada = DateFormat.format("dd/MM/yyyy HH:mm", calendar).toString();
-                etDataHora.setText(dataHoraFormatada);
-            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+        btnListaManutencao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listarManutencoes();
+            }
+        });
     }
 
     private void carregarManutencao(long id) {
         Manutencao m = manutencaoDAO.getManutencaoById(id);
         if (m != null) {
-            etTipo.setText(m.getTipo());
+            // Configurar spinner com o tipo correto
+            ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) spinnerTipo.getAdapter();
+            int position = adapter.getPosition(m.getTipo());
+            if (position >= 0) {
+                spinnerTipo.setSelection(position);
+            }
+
             etDataHora.setText(m.getDataHora());
             etLocal.setText(m.getLocal());
             etServico.setText(m.getServico());
             etResponsavel.setText(m.getResponsavel());
             etValor.setText(m.getValor());
+            etNotas.setText(m.getNotas());
 
-            anexosCaminhos.clear();
-            if (m.getAnexos() != null) {
-                for (String path : m.getAnexos()) {
-                    anexosCaminhos.add(Uri.parse(path));
+            // Carregar anexos (se houver)
+            if (m.getAnexos() != null && !m.getAnexos().isEmpty()) {
+                anexosUris.clear();
+                for (String caminho : m.getAnexos()) {
+                    anexosUris.add(Uri.parse(caminho));
                 }
             }
-            anexosAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void selecionarAnexos() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        startActivityForResult(intent, PICK_IMAGES_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGES_REQUEST && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    for (int i = 0; i < count; i++) {
+                        Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                        anexosUris.add(imageUri);
+                    }
+                } else if (data.getData() != null) {
+                    Uri imageUri = data.getData();
+                    anexosUris.add(imageUri);
+                }
+                Toast.makeText(this, "Anexos selecionados: " + anexosUris.size(), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     private void salvarManutencao() {
-        String tipo = etTipo.getText().toString().trim();
-        String dataHora = etDataHora.getText().toString().trim();
-        String local = etLocal.getText().toString().trim();
-        String servico = etServico.getText().toString().trim();
-        String responsavel = etResponsavel.getText().toString().trim();
-        String valor = etValor.getText().toString().trim();
+        String tipo = spinnerTipo.getSelectedItem().toString();
+        String dataHora = etDataHora.getText().toString();
+        String local = etLocal.getText().toString();
+        String servico = etServico.getText().toString();
+        String responsavel = etResponsavel.getText().toString();
+        String valor = etValor.getText().toString();
+        String notas = etNotas.getText().toString();
 
-        if (tipo.isEmpty() || dataHora.isEmpty()) {
-            Toast.makeText(this, "Preencha os campos Tipo e Data/Hora.", Toast.LENGTH_SHORT).show();
+        if (tipo.isEmpty() || dataHora.isEmpty() || local.isEmpty() || servico.isEmpty()) {
+            Toast.makeText(this, "Preencha os campos obrigatórios", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -152,41 +157,48 @@ public class ManutencaoActivity extends AppCompatActivity {
         manutencao.setServico(servico);
         manutencao.setResponsavel(responsavel);
         manutencao.setValor(valor);
+        manutencao.setNotas(notas);
 
-        List<String> paths = new ArrayList<>();
-        for (Uri uri : anexosCaminhos) {
-            paths.add(uri.toString());
+        // Converter URIs para strings
+        List<String> caminhosAnexos = new ArrayList<>();
+        for (Uri uri : anexosUris) {
+            caminhosAnexos.add(uri.toString());
         }
-        manutencao.setAnexos(paths);
+        manutencao.setAnexos(caminhosAnexos);
 
-        boolean sucesso;
-        if (editarId > 0) {
-            manutencao.setId(editarId);
-            sucesso = manutencaoDAO.atualizarManutencao(manutencao) > 0;
+        long resultado;
+        if (editarId != -1) {
+            manutencao.setId((int) editarId);
+            resultado = manutencaoDAO.atualizarManutencao(manutencao);
+            if (resultado > 0) {
+                Toast.makeText(this, "Manutenção atualizada com sucesso!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Erro ao atualizar manutenção", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            long id = manutencaoDAO.inserirManutencao(manutencao);
-            sucesso = id != -1;
+            resultado = manutencaoDAO.salvarManutencao(manutencao);
+            if (resultado != -1) {
+                Toast.makeText(this, "Manutenção salva com sucesso!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Erro ao salvar manutenção", Toast.LENGTH_SHORT).show();
+            }
         }
 
-        if (sucesso) {
-            Toast.makeText(this, "Manutenção salva com sucesso!", Toast.LENGTH_SHORT).show();
-            limparCampos();
-        } else {
-            Toast.makeText(this, "Erro ao salvar manutenção.", Toast.LENGTH_SHORT).show();
+        if (resultado != -1) {
+            finish();
         }
     }
 
-    private void limparCampos() {
-        etTipo.setText("");
-        etDataHora.setText("");
-        etLocal.setText("");
-        etServico.setText("");
-        etResponsavel.setText("");
-        etValor.setText("");
+    private void listarManutencoes() {
+        Intent intent = new Intent(this, ListaManutencaoActivity.class);
+        startActivity(intent);
+    }
 
-        anexosCaminhos.clear();
-        anexosAdapter.notifyDataSetChanged();
-
-        editarId = -1; // reseta modo de edição
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (manutencaoDAO != null) {
+            manutencaoDAO.fechar();
+        }
     }
 }

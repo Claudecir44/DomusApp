@@ -4,22 +4,35 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
-import org.json.JSONArray;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ManutencaoDAO {
 
+    private SQLiteDatabase db;
     private BDCondominioHelper dbHelper;
 
-    public ManutencaoDAO(Context context){
+    public ManutencaoDAO(Context context) {
         dbHelper = new BDCondominioHelper(context);
     }
 
-    public long inserirManutencao(Manutencao manutencao){
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+    public void abrir() {
+        db = dbHelper.getWritableDatabase();
+    }
+
+    public void fechar() {
+        dbHelper.close();
+    }
+
+    // Método para obter manutenção por ID (usando long)
+    public Manutencao getManutencaoById(long id) {
+        return getManutencaoPorId((int) id);
+    }
+
+    // Método para salvar manutenção
+    public long salvarManutencao(Manutencao manutencao) {
+        abrir();
+
         ContentValues values = new ContentValues();
         values.put(BDCondominioHelper.COL_MANU_TIPO, manutencao.getTipo());
         values.put(BDCondominioHelper.COL_MANU_DATAHORA, manutencao.getDataHora());
@@ -29,48 +42,111 @@ public class ManutencaoDAO {
         values.put(BDCondominioHelper.COL_MANU_VALOR, manutencao.getValor());
         values.put(BDCondominioHelper.COL_MANU_NOTAS, manutencao.getNotas());
 
-        JSONArray jsonArray = new JSONArray(manutencao.getAnexos());
-        values.put(BDCondominioHelper.COL_MANU_DOCUMENTO, jsonArray.toString());
+        // Tratar anexos (convertendo lista para string)
+        if (manutencao.getAnexos() != null && !manutencao.getAnexos().isEmpty()) {
+            values.put(BDCondominioHelper.COL_MANU_ANEXOS,
+                    android.text.TextUtils.join(",", manutencao.getAnexos()));
+        } else {
+            values.putNull(BDCondominioHelper.COL_MANU_ANEXOS);
+        }
 
         long id = db.insert(BDCondominioHelper.TABELA_MANUTENCOES, null, values);
-        db.close();
+        fechar();
         return id;
     }
 
-    public int atualizarManutencao(Manutencao manutencao){
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(BDCondominioHelper.COL_MANU_TIPO, manutencao.getTipo());
-        values.put(BDCondominioHelper.COL_MANU_DATAHORA, manutencao.getDataHora());
-        values.put(BDCondominioHelper.COL_MANU_LOCAL, manutencao.getLocal());
-        values.put(BDCondominioHelper.COL_MANU_SERVICO, manutencao.getServico());
-        values.put(BDCondominioHelper.COL_MANU_RESPONSAVEL, manutencao.getResponsavel());
-        values.put(BDCondominioHelper.COL_MANU_VALOR, manutencao.getValor());
-        values.put(BDCondominioHelper.COL_MANU_NOTAS, manutencao.getNotas());
+    // Método para obter todas as manutenções
+    public List<Manutencao> getTodasManutencoes() {
+        abrir();
+        List<Manutencao> manutencoes = new ArrayList<>();
 
-        JSONArray jsonArray = new JSONArray(manutencao.getAnexos());
-        values.put(BDCondominioHelper.COL_MANU_DOCUMENTO, jsonArray.toString());
+        String[] colunas = {
+                BDCondominioHelper.COL_MANU_ID,
+                BDCondominioHelper.COL_MANU_TIPO,
+                BDCondominioHelper.COL_MANU_DATAHORA,
+                BDCondominioHelper.COL_MANU_LOCAL,
+                BDCondominioHelper.COL_MANU_SERVICO,
+                BDCondominioHelper.COL_MANU_RESPONSAVEL,
+                BDCondominioHelper.COL_MANU_VALOR,
+                BDCondominioHelper.COL_MANU_NOTAS,
+                BDCondominioHelper.COL_MANU_ANEXOS
+        };
 
-        int linhas = db.update(BDCondominioHelper.TABELA_MANUTENCOES,
-                values,
-                BDCondominioHelper.COL_MANU_ID + "=?",
-                new String[]{String.valueOf(manutencao.getId())});
-        db.close();
-        return linhas;
+        Cursor cursor = db.query(BDCondominioHelper.TABELA_MANUTENCOES,
+                colunas, null, null, null, null,
+                BDCondominioHelper.COL_MANU_DATAHORA + " DESC");
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Manutencao manutencao = new Manutencao();
+                manutencao.setId(cursor.getInt(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_ID)));
+                manutencao.setTipo(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_TIPO)));
+                manutencao.setDataHora(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_DATAHORA)));
+                manutencao.setLocal(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_LOCAL)));
+                manutencao.setServico(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_SERVICO)));
+                manutencao.setResponsavel(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_RESPONSAVEL)));
+                manutencao.setValor(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_VALOR)));
+                manutencao.setNotas(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_NOTAS)));
+
+                // Tratar anexos
+                String anexosStr = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_ANEXOS));
+                if (anexosStr != null && !anexosStr.isEmpty()) {
+                    List<String> anexos = new ArrayList<>();
+                    String[] anexosArray = anexosStr.split(",");
+                    for (String anexo : anexosArray) {
+                        if (!anexo.trim().isEmpty()) {
+                            anexos.add(anexo.trim());
+                        }
+                    }
+                    manutencao.setAnexos(anexos);
+                }
+
+                manutencoes.add(manutencao);
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+
+        fechar();
+        return manutencoes;
     }
 
-    public Manutencao getManutencaoById(long id){
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+    // Método para excluir manutenção
+    public int excluirManutencao(int id) {
+        abrir();
+        int linhasAfetadas = db.delete(BDCondominioHelper.TABELA_MANUTENCOES,
+                BDCondominioHelper.COL_MANU_ID + " = ?",
+                new String[]{String.valueOf(id)});
+        fechar();
+        return linhasAfetadas;
+    }
+
+    // Método para obter manutenção por ID (para edição)
+    public Manutencao getManutencaoPorId(int id) {
+        abrir();
+        Manutencao manutencao = null;
+
+        String[] colunas = {
+                BDCondominioHelper.COL_MANU_ID,
+                BDCondominioHelper.COL_MANU_TIPO,
+                BDCondominioHelper.COL_MANU_DATAHORA,
+                BDCondominioHelper.COL_MANU_LOCAL,
+                BDCondominioHelper.COL_MANU_SERVICO,
+                BDCondominioHelper.COL_MANU_RESPONSAVEL,
+                BDCondominioHelper.COL_MANU_VALOR,
+                BDCondominioHelper.COL_MANU_NOTAS,
+                BDCondominioHelper.COL_MANU_ANEXOS
+        };
+
         Cursor cursor = db.query(BDCondominioHelper.TABELA_MANUTENCOES,
-                null,
-                BDCondominioHelper.COL_MANU_ID + "=?",
+                colunas,
+                BDCondominioHelper.COL_MANU_ID + " = ?",
                 new String[]{String.valueOf(id)},
                 null, null, null);
 
-        Manutencao manutencao = null;
-        if(cursor != null && cursor.moveToFirst()){
+        if (cursor != null && cursor.moveToFirst()) {
             manutencao = new Manutencao();
-            manutencao.setId(cursor.getLong(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_ID)));
+            manutencao.setId(cursor.getInt(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_ID)));
             manutencao.setTipo(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_TIPO)));
             manutencao.setDataHora(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_DATAHORA)));
             manutencao.setLocal(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_LOCAL)));
@@ -79,73 +155,51 @@ public class ManutencaoDAO {
             manutencao.setValor(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_VALOR)));
             manutencao.setNotas(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_NOTAS)));
 
-            String anexosJson = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_DOCUMENTO));
-            List<String> anexos = new ArrayList<>();
-            if(anexosJson != null && !anexosJson.isEmpty()){
-                try {
-                    JSONArray array = new JSONArray(anexosJson);
-                    for(int i=0; i<array.length(); i++){
-                        anexos.add(array.getString(i));
+            // Tratar anexos
+            String anexosStr = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_ANEXOS));
+            if (anexosStr != null && !anexosStr.isEmpty()) {
+                List<String> anexos = new ArrayList<>();
+                String[] anexosArray = anexosStr.split(",");
+                for (String anexo : anexosArray) {
+                    if (!anexo.trim().isEmpty()) {
+                        anexos.add(anexo.trim());
                     }
-                } catch (Exception e){
-                    e.printStackTrace();
                 }
+                manutencao.setAnexos(anexos);
             }
-            manutencao.setAnexos(anexos);
 
             cursor.close();
         }
-        db.close();
+
+        fechar();
         return manutencao;
     }
 
-    public List<Manutencao> getTodasManutencoes(){
-        List<Manutencao> lista = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(BDCondominioHelper.TABELA_MANUTENCOES,
-                null, null, null, null, null,
-                BDCondominioHelper.COL_MANU_DATAHORA + " DESC");
+    // Método para atualizar manutenção
+    public int atualizarManutencao(Manutencao manutencao) {
+        abrir();
 
-        if(cursor != null){
-            while(cursor.moveToNext()){
-                Manutencao m = new Manutencao();
-                m.setId(cursor.getLong(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_ID)));
-                m.setTipo(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_TIPO)));
-                m.setDataHora(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_DATAHORA)));
-                m.setLocal(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_LOCAL)));
-                m.setServico(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_SERVICO)));
-                m.setResponsavel(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_RESPONSAVEL)));
-                m.setValor(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_VALOR)));
-                m.setNotas(cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_NOTAS)));
+        ContentValues values = new ContentValues();
+        values.put(BDCondominioHelper.COL_MANU_TIPO, manutencao.getTipo());
+        values.put(BDCondominioHelper.COL_MANU_DATAHORA, manutencao.getDataHora());
+        values.put(BDCondominioHelper.COL_MANU_LOCAL, manutencao.getLocal());
+        values.put(BDCondominioHelper.COL_MANU_SERVICO, manutencao.getServico());
+        values.put(BDCondominioHelper.COL_MANU_RESPONSAVEL, manutencao.getResponsavel());
+        values.put(BDCondominioHelper.COL_MANU_VALOR, manutencao.getValor());
+        values.put(BDCondominioHelper.COL_MANU_NOTAS, manutencao.getNotas());
 
-                String anexosJson = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_MANU_DOCUMENTO));
-                List<String> anexos = new ArrayList<>();
-                if(anexosJson != null && !anexosJson.isEmpty()){
-                    try {
-                        JSONArray array = new JSONArray(anexosJson);
-                        for(int i=0; i<array.length(); i++){
-                            anexos.add(array.getString(i));
-                        }
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-                m.setAnexos(anexos);
-
-                lista.add(m);
-            }
-            cursor.close();
+        // Tratar anexos
+        if (manutencao.getAnexos() != null && !manutencao.getAnexos().isEmpty()) {
+            values.put(BDCondominioHelper.COL_MANU_ANEXOS,
+                    android.text.TextUtils.join(",", manutencao.getAnexos()));
+        } else {
+            values.putNull(BDCondominioHelper.COL_MANU_ANEXOS);
         }
-        db.close();
-        return lista;
-    }
 
-    public int excluirManutencao(long id){
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int linhas = db.delete(BDCondominioHelper.TABELA_MANUTENCOES,
-                BDCondominioHelper.COL_MANU_ID + "=?",
-                new String[]{String.valueOf(id)});
-        db.close();
-        return linhas;
+        int linhasAfetadas = db.update(BDCondominioHelper.TABELA_MANUTENCOES, values,
+                BDCondominioHelper.COL_MANU_ID + " = ?",
+                new String[]{String.valueOf(manutencao.getId())});
+        fechar();
+        return linhasAfetadas;
     }
 }

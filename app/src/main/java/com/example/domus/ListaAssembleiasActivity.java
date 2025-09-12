@@ -27,6 +27,7 @@ public class ListaAssembleiasActivity extends AppCompatActivity implements
     private RecyclerView recyclerView;
     private AssembleiaAdapter adapter;
     private AssembleiaDAO assembleiaDAO;
+    private String tipoUsuario; // Variável para controlar o tipo de usuário
 
     // Views do painel de visualização
     private View panelVisualizacao;
@@ -43,6 +44,12 @@ public class ListaAssembleiasActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_assembleias);
 
+        // Obter o tipo de usuário
+        tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+        if (tipoUsuario == null) {
+            tipoUsuario = "admin"; // Padrão para admin se não especificado
+        }
+
         recyclerView = findViewById(R.id.recyclerAssembleias);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -56,6 +63,12 @@ public class ListaAssembleiasActivity extends AppCompatActivity implements
         btnFecharVisualizacao = findViewById(R.id.btnFecharVisualizacao);
         btnEditarVisualizacao = findViewById(R.id.btnEditarVisualizacao);
         btnExcluirVisualizacao = findViewById(R.id.btnExcluirVisualizacao);
+
+        // Ocultar botões de editar e excluir se for morador
+        if ("morador".equalsIgnoreCase(tipoUsuario)) {
+            btnEditarVisualizacao.setVisibility(View.GONE);
+            btnExcluirVisualizacao.setVisibility(View.GONE);
+        }
 
         recyclerAnexos.setLayoutManager(new LinearLayoutManager(this));
         anexosAdapter = new AnexosAdapter(listaAnexos);
@@ -96,7 +109,8 @@ public class ListaAssembleiasActivity extends AppCompatActivity implements
 
     private void carregarAssembleias() {
         List<JSONObject> lista = assembleiaDAO.listarAssembleias();
-        adapter = new AssembleiaAdapter(this, lista, this, this, this); // inclui listener de editar
+        // Passar o tipoUsuario para o adapter
+        adapter = new AssembleiaAdapter(this, lista, this, this, this, tipoUsuario);
         recyclerView.setAdapter(adapter);
     }
 

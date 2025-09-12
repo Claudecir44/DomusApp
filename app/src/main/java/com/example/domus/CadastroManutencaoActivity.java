@@ -76,20 +76,29 @@ public class CadastroManutencaoActivity extends AppCompatActivity {
         try {
             JSONArray array = new JSONArray(getSharedPreferences("manutencoes", MODE_PRIVATE)
                     .getString("lista", "[]"));
-            JSONObject m = array.getJSONObject(index);
 
-            etTipo.setText(m.optString("tipo", ""));
-            etDataHora.setText(m.optString("dataHora", ""));
-            etLocal.setText(m.optString("local", ""));
-            etServico.setText(m.optString("servico", ""));
-            etResponsavel.setText(m.optString("responsavel", ""));
-            etValor.setText(m.optString("valor", ""));
-            etNotas.setText(m.optString("notas", ""));
-            if (m.has("documento"))
-                documentoSelecionado = Uri.parse(m.optString("documento", ""));
+            if (index < array.length()) {
+                JSONObject m = array.getJSONObject(index);
+
+                etTipo.setText(m.optString("tipo", ""));
+                etDataHora.setText(m.optString("dataHora", ""));
+                etLocal.setText(m.optString("local", ""));
+                etServico.setText(m.optString("servico", ""));
+                etResponsavel.setText(m.optString("responsavel", ""));
+                etValor.setText(m.optString("valor", ""));
+                etNotas.setText(m.optString("notas", ""));
+
+                if (m.has("documento") && !m.isNull("documento")) {
+                    String documentoUri = m.optString("documento", "");
+                    if (!documentoUri.isEmpty()) {
+                        documentoSelecionado = Uri.parse(documentoUri);
+                    }
+                }
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
+            Toast.makeText(this, "Erro ao carregar manutenção", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -108,8 +117,10 @@ public class CadastroManutencaoActivity extends AppCompatActivity {
                 return;
             }
 
-            JSONArray array = new JSONArray(getSharedPreferences("manutencoes", MODE_PRIVATE)
-                    .getString("lista", "[]"));
+            // Obter array existente
+            String listaJson = getSharedPreferences("manutencoes", MODE_PRIVATE)
+                    .getString("lista", "[]");
+            JSONArray array = new JSONArray(listaJson);
 
             JSONObject m = new JSONObject();
             m.put("tipo", tipo);
@@ -119,17 +130,26 @@ public class CadastroManutencaoActivity extends AppCompatActivity {
             m.put("responsavel", responsavel);
             m.put("valor", valor);
             m.put("notas", notas);
-            if (documentoSelecionado != null)
-                m.put("documento", documentoSelecionado.toString());
 
-            if (indexEditando >= 0) {
+            if (documentoSelecionado != null) {
+                m.put("documento", documentoSelecionado.toString());
+            } else {
+                m.put("documento", JSONObject.NULL);
+            }
+
+            if (indexEditando >= 0 && indexEditando < array.length()) {
+                // Edição - substitui o item existente
                 array.put(indexEditando, m);
             } else {
+                // Novo - adiciona no final
                 array.put(m);
             }
 
+            // Salvar no SharedPreferences
             getSharedPreferences("manutencoes", MODE_PRIVATE)
-                    .edit().putString("lista", array.toString()).apply();
+                    .edit()
+                    .putString("lista", array.toString())
+                    .apply();
 
             Toast.makeText(this, "Manutenção salva!", Toast.LENGTH_SHORT).show();
 

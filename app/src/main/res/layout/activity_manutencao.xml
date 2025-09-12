@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:fillViewport="true">
 
     <LinearLayout
         android:id="@+id/linearLayoutManutencao"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="8dp">
 
         <!-- Título -->
         <TextView
@@ -22,79 +25,164 @@
             android:layout_marginBottom="16dp"
             android:textColor="@android:color/black"/>
 
-        <!-- Tipo -->
-        <EditText
-            android:id="@+id/etTipo"
+        <!-- Tipo (Spinner em vez de EditText) -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tipo"/>
+            android:text="Tipo de Manutenção:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerTipo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Data/Hora -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Data e Hora:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
         <EditText
             android:id="@+id/etDataHora"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Data e Hora"/>
+            android:hint="Ex: 2023-12-15 14:30"
+            android:layout_marginBottom="16dp"
+            android:inputType="datetime"/>
 
         <!-- Local -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Local:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
         <EditText
             android:id="@+id/etLocal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Local"/>
+            android:hint="Ex: Torre A, Apartamento 101"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Serviço -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Serviço:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
         <EditText
             android:id="@+id/etServico"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Serviço"/>
+            android:hint="Ex: Troca de lâmpada, Reparo hidráulico"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Responsável -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Responsável:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
         <EditText
             android:id="@+id/etResponsavel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Responsável"/>
+            android:hint="Ex: João Silva, Empresa XYZ"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Valor -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Valor:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
         <EditText
             android:id="@+id/etValor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Valor"
-            android:inputType="numberDecimal"/>
+            android:hint="Ex: 150,00"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="16dp"/>
 
-        <!-- Botão anexar notas -->
+        <!-- Notas -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notas/Observações:"
+            android:textSize="16sp"
+            android:layout_marginBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/etNotas"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:hint="Digite observações sobre a manutenção..."
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Botão anexar documentos -->
         <Button
             android:id="@+id/btnAnexarManutencao"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Anexar Notas"
-            android:layout_marginTop="8dp"/>
+            android:text="Anexar Documentos/Fotos"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
 
         <!-- RecyclerView para anexos -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Anexos:"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerAnexos"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_height="120dp"
+            android:layout_marginBottom="16dp"
+            android:background="@android:color/darker_gray"/>
 
-        <!-- Botão salvar -->
-        <Button
-            android:id="@+id/btnSalvarManutencao"
+        <!-- Botões de ação -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Salvar"
-            android:layout_marginTop="16dp"/>
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:layout_marginTop="8dp">
 
-        <!-- Botão lista de manutenção -->
-        <Button
-            android:id="@+id/btnListaManutencao"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Lista de Manutenção"
-            android:layout_marginTop="8dp"/>
+            <Button
+                android:id="@+id/btnSalvarManutencao"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Salvar"
+                android:layout_marginEnd="4dp"
+                android:backgroundTint="@color/design_default_color_primary"/>
+
+            <Button
+                android:id="@+id/btnListaManutencao"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Listar"
+                android:layout_marginStart="4dp"
+                android:backgroundTint="@color/design_default_color_secondary"/>
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

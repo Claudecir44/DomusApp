@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 public class BDCondominioHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "bdcondominio.db";
-    private static final int DATABASE_VERSION = 14;
+    private static final int DATABASE_VERSION = 15; // Aumentei a versão para forçar atualização
 
     // Tabelas
     public static final String TABELA_MORADORES = "moradores";
@@ -71,7 +71,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     public static final String COL_FUNC_HORA_SAIDA = "hora_saida";
     public static final String COL_FUNC_IMAGEM_URI = "imagem_uri";
 
-    // Colunas Manutenções
+    // Colunas Manutenções - CORRIGIDAS
     public static final String COL_MANU_ID = "id";
     public static final String COL_MANU_TIPO = "tipo";
     public static final String COL_MANU_DATAHORA = "dataHora";
@@ -80,7 +80,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     public static final String COL_MANU_RESPONSAVEL = "responsavel";
     public static final String COL_MANU_VALOR = "valor";
     public static final String COL_MANU_NOTAS = "notas";
-    public static final String COL_MANU_DOCUMENTO = "documento";
+    public static final String COL_MANU_ANEXOS = "anexos"; // Mudei de DOCUMENTO para ANEXOS para consistência
 
     // Colunas Assembleias
     public static final String COL_ASS_ID = "id";
@@ -88,7 +88,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     public static final String COL_ASS_LOCAL = "local";
     public static final String COL_ASS_ASSUNTO = "assunto";
     public static final String COL_ASS_DESCRICAO = "descricao";
-    public static final String COL_ASS_DOCUMENTO = "documento";
+    public static final String COL_ASS_ANEXOS = "anexos"; // Mudei de DOCUMENTO para ANEXOS
 
     // Colunas Despesas
     public static final String COL_DESP_ID = "id";
@@ -142,6 +142,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     }
 
     private void criarTodasTabelas(SQLiteDatabase db) {
+        // Tabela Moradores
         db.execSQL("CREATE TABLE " + TABELA_MORADORES + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_COD + " TEXT UNIQUE, " +
@@ -155,6 +156,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_LOTE + " TEXT, " +
                 COL_IMAGEM_URI + " TEXT);");
 
+        // Tabela Ocorrências
         db.execSQL("CREATE TABLE " + TABELA_OCORRENCIAS + " (" +
                 COL_OCOR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_OCOR_TIPO + " TEXT, " +
@@ -163,6 +165,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_OCOR_DATAHORA + " TEXT NOT NULL, " +
                 COL_OCOR_ANEXOS + " TEXT);");
 
+        // Tabela Funcionários
         db.execSQL("CREATE TABLE " + TABELA_FUNCIONARIOS + " (" +
                 COL_FUNC_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_FUNC_NOME + " TEXT NOT NULL, " +
@@ -183,6 +186,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_FUNC_HORA_SAIDA + " TEXT, " +
                 COL_FUNC_IMAGEM_URI + " TEXT);");
 
+        // Tabela Manutenções - CORRIGIDA
         db.execSQL("CREATE TABLE " + TABELA_MANUTENCOES + " (" +
                 COL_MANU_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_MANU_TIPO + " TEXT NOT NULL, " +
@@ -192,16 +196,18 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_MANU_RESPONSAVEL + " TEXT, " +
                 COL_MANU_VALOR + " TEXT, " +
                 COL_MANU_NOTAS + " TEXT, " +
-                COL_MANU_DOCUMENTO + " TEXT);");
+                COL_MANU_ANEXOS + " TEXT);"); // Mudei de DOCUMENTO para ANEXOS
 
+        // Tabela Assembleias - CORRIGIDA
         db.execSQL("CREATE TABLE " + TABELA_ASSEMBLEIAS + " (" +
                 COL_ASS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_ASS_DATAHORA + " TEXT NOT NULL, " +
                 COL_ASS_LOCAL + " TEXT, " +
                 COL_ASS_ASSUNTO + " TEXT NOT NULL, " +
                 COL_ASS_DESCRICAO + " TEXT, " +
-                COL_ASS_DOCUMENTO + " TEXT);");
+                COL_ASS_ANEXOS + " TEXT);"); // Mudei de DOCUMENTO para ANEXOS
 
+        // Tabela Despesas
         db.execSQL("CREATE TABLE " + TABELA_DESPESAS + " (" +
                 COL_DESP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_DESP_DATAHORA + " TEXT NOT NULL, " +
@@ -210,6 +216,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_DESP_VALOR + " REAL, " +
                 COL_DESP_ANEXOS + " TEXT);");
 
+        // Tabela Avisos
         db.execSQL("CREATE TABLE " + TABELA_AVISOS + " (" +
                 COL_AVISO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_AVISO_DATAHORA + " TEXT NOT NULL, " +
@@ -219,6 +226,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_AVISO_CRIADO_EM + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 COL_AVISO_ATUALIZADO_EM + " DATETIME DEFAULT CURRENT_TIMESTAMP);");
 
+        // Tabela Usuários Admin
         db.execSQL("CREATE TABLE " + TABELA_USUARIOS_ADMIN + " (" +
                 COL_ADMIN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_ADMIN_USUARIO + " TEXT UNIQUE NOT NULL, " +
@@ -228,23 +236,67 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     }
 
     private void criarAdminMaster(SQLiteDatabase db) {
-        ContentValues cv = new ContentValues();
-        cv.put(COL_ADMIN_USUARIO, "admin");
-        cv.put(COL_ADMIN_SENHA_HASH, gerarHash("master"));
-        cv.put(COL_ADMIN_TIPO, "MASTER");
-        cv.put(COL_ADMIN_DATA, String.valueOf(System.currentTimeMillis()));
-        db.insert(TABELA_USUARIOS_ADMIN, null, cv);
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_ADMIN_USUARIO, "admin");
+            cv.put(COL_ADMIN_SENHA_HASH, gerarHash("master"));
+            cv.put(COL_ADMIN_TIPO, "MASTER");
+            cv.put(COL_ADMIN_DATA, String.valueOf(System.currentTimeMillis()));
+            db.insert(TABELA_USUARIOS_ADMIN, null, cv);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean existeAdmin() {
         SQLiteDatabase db = this.getReadableDatabase();
         int count = 0;
-        Cursor c = db.rawQuery("SELECT COUNT(*) FROM " + TABELA_USUARIOS_ADMIN, null);
-        if (c != null) {
-            if (c.moveToFirst()) count = c.getInt(0);
-            c.close();
+        Cursor c = null;
+        try {
+            c = db.rawQuery("SELECT COUNT(*) FROM " + TABELA_USUARIOS_ADMIN, null);
+            if (c != null && c.moveToFirst()) {
+                count = c.getInt(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                c.close();
+            }
         }
         return count > 0;
+    }
+
+    // Método para verificar se uma tabela existe
+    public boolean tabelaExiste(String tabelaNome) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                    new String[]{tabelaNome});
+            return cursor != null && cursor.getCount() > 0;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    // Método para contar registros em uma tabela
+    public int contarRegistros(String tabelaNome) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT COUNT(*) FROM " + tabelaNome, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return 0;
     }
 
     // Método de hash SHA-256 padronizado
@@ -258,6 +310,26 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // Método para debug - listar todas as tabelas
+    public void debugTabelas() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    String tableName = cursor.getString(0);
+                    int count = contarRegistros(tableName);
+                    android.util.Log.d("DB_DEBUG", "Tabela: " + tableName + " - Registros: " + count);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 }

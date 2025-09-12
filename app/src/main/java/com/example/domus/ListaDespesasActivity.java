@@ -1,6 +1,5 @@
 package com.example.domus;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -18,11 +17,18 @@ public class ListaDespesasActivity extends AppCompatActivity {
     private DespesaAdapter adapter;
     private DespesaDAO despesaDAO;
     private List<Despesa> listaDespesas;
+    private String tipoUsuario; // Variável para controlar o tipo de usuário
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_despesas);
+
+        // Obter o tipo de usuário
+        tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+        if (tipoUsuario == null) {
+            tipoUsuario = "admin"; // Padrão para admin se não especificado
+        }
 
         // Corrigido: ID do RecyclerView conforme XML
         recyclerView = findViewById(R.id.recyclerViewDespesas);
@@ -39,6 +45,12 @@ public class ListaDespesasActivity extends AppCompatActivity {
         adapter = new DespesaAdapter(this, listaDespesas, new DespesaAdapter.OnDespesaListener() {
             @Override
             public void onEditar(Despesa despesa, int position) {
+                // Verificar se é morador antes de permitir edição
+                if ("morador".equalsIgnoreCase(tipoUsuario)) {
+                    Toast.makeText(ListaDespesasActivity.this, "Acesso negado. Apenas administradores podem editar despesas.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 // Ao editar, abre o RegistroDespesasActivity com os dados preenchidos
                 Intent intent = new Intent(ListaDespesasActivity.this, RegistroDespesasActivity.class);
                 intent.putExtra("despesaIndex", position); // enviando o índice para edição
@@ -47,6 +59,12 @@ public class ListaDespesasActivity extends AppCompatActivity {
 
             @Override
             public void onExcluir(Despesa despesa, int position) {
+                // Verificar se é morador antes de permitir exclusão
+                if ("morador".equalsIgnoreCase(tipoUsuario)) {
+                    Toast.makeText(ListaDespesasActivity.this, "Acesso negado. Apenas administradores podem excluir despesas.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 new AlertDialog.Builder(ListaDespesasActivity.this)
                         .setTitle("Confirmação")
                         .setMessage("Deseja realmente excluir esta despesa?")
@@ -58,7 +76,7 @@ public class ListaDespesasActivity extends AppCompatActivity {
                         .setNegativeButton("Não", null)
                         .show();
             }
-        });
+        }, tipoUsuario); // Passa o tipo de usuário para o adapter
 
         recyclerView.setAdapter(adapter);
     }
