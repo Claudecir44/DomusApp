@@ -5,7 +5,7 @@ import java.util.List;
 public class Manutencao {
     private int id;
     private String tipo;
-    private String dataHora;
+    private String dataHora; // mantém como String para não alterar formato
     private String local;
     private String servico;
     private String responsavel;
@@ -13,22 +13,6 @@ public class Manutencao {
     private String notas;
     private List<String> anexos;
 
-    // Construtores
-    public Manutencao() {}
-
-    public Manutencao(String tipo, String dataHora, String local, String servico,
-                      String responsavel, String valor, String notas, List<String> anexos) {
-        this.tipo = tipo;
-        this.dataHora = dataHora;
-        this.local = local;
-        this.servico = servico;
-        this.responsavel = responsavel;
-        this.valor = valor;
-        this.notas = notas;
-        this.anexos = anexos;
-    }
-
-    // Getters e Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

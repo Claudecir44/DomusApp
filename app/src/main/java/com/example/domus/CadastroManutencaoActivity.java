@@ -1,8 +1,12 @@
 package com.example.domus;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -11,24 +15,38 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 public class CadastroManutencaoActivity extends AppCompatActivity {
 
     private EditText etTipo, etDataHora, etLocal, etServico, etResponsavel, etValor, etNotas;
     private Button btnAnexar, btnSalvar, btnLista;
-    private Uri documentoSelecionado;
+    private ManutencaoDAO manutencaoDAO;
+    private List<String> anexos = new ArrayList<>();
+    private int indexEdicao = -1;
 
-    private int indexEditando = -1;
+    private final SimpleDateFormat formatoDataHora = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+
+    // Launcher para selecionar arquivos
+    private final ActivityResultLauncher<String[]> filePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.OpenDocument(),
+            uris -> {
+                if (uris != null) {
+                    anexos.add(uris.toString());
+                    Toast.makeText(this, "Arquivo anexado: " + getFileName(uris), Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro_manutencao);
 
-        // Campos
         etTipo = findViewById(R.id.editTipoManutencao);
         etDataHora = findViewById(R.id.editDataHora);
         etLocal = findViewById(R.id.editLocal);
@@ -37,139 +55,129 @@ public class CadastroManutencaoActivity extends AppCompatActivity {
         etValor = findViewById(R.id.editValor);
         etNotas = findViewById(R.id.editNotas);
 
-        // Botões
         btnAnexar = findViewById(R.id.buttonAnexar);
         btnSalvar = findViewById(R.id.buttonSalvarManutencao);
         btnLista = findViewById(R.id.buttonListaManutencao);
 
-        // Verifica se é edição
-        indexEditando = getIntent().getIntExtra("index", -1);
-        if (indexEditando >= 0) {
-            carregarManutencao(indexEditando);
-        }
+        manutencaoDAO = new ManutencaoDAO(this);
 
-        // Anexar arquivo
-        ActivityResultLauncher<String[]> arquivoLauncher = registerForActivityResult(
-                new ActivityResultContracts.OpenDocument(),
-                uri -> {
-                    if (uri != null) {
-                        documentoSelecionado = uri;
-                        Toast.makeText(this, "Arquivo selecionado", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
+        etDataHora.setOnClickListener(v -> mostrarDateTimePicker());
 
-        btnAnexar.setOnClickListener(v -> arquivoLauncher.launch(
-                new String[]{"application/pdf", "application/msword", "application/vnd.ms-excel"}
-        ));
+        // Botão anexar arquivos
+        btnAnexar.setOnClickListener(v -> {
+            String[] mimeTypes = {"application/pdf", "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "image/jpeg", "image/png", "text/plain"};
+            filePickerLauncher.launch(mimeTypes);
+        });
 
-        // Salvar manutenção
         btnSalvar.setOnClickListener(v -> salvarManutencao());
 
-        // Abrir lista de manutenções
-        btnLista.setOnClickListener(v -> startActivity(
-                new Intent(CadastroManutencaoActivity.this, ListaManutencaoActivity.class)
-        ));
+        btnLista.setOnClickListener(v -> {
+            Intent intent = new Intent(CadastroManutencaoActivity.this, ListaManutencaoActivity.class);
+            startActivity(intent);
+        });
+
+        if (getIntent().hasExtra("index")) {
+            indexEdicao = getIntent().getIntExtra("index", -1);
+            if (indexEdicao >= 0) carregarManutencaoParaEdicao(indexEdicao);
+        }
     }
 
-    private void carregarManutencao(int index) {
-        try {
-            JSONArray array = new JSONArray(getSharedPreferences("manutencoes", MODE_PRIVATE)
-                    .getString("lista", "[]"));
+    private void mostrarDateTimePicker() {
+        final Calendar c = Calendar.getInstance();
+        int ano = c.get(Calendar.YEAR);
+        int mes = c.get(Calendar.MONTH);
+        int dia = c.get(Calendar.DAY_OF_MONTH);
+        int hora = c.get(Calendar.HOUR_OF_DAY);
+        int minuto = c.get(Calendar.MINUTE);
 
-            if (index < array.length()) {
-                JSONObject m = array.getJSONObject(index);
-
-                etTipo.setText(m.optString("tipo", ""));
-                etDataHora.setText(m.optString("dataHora", ""));
-                etLocal.setText(m.optString("local", ""));
-                etServico.setText(m.optString("servico", ""));
-                etResponsavel.setText(m.optString("responsavel", ""));
-                etValor.setText(m.optString("valor", ""));
-                etNotas.setText(m.optString("notas", ""));
-
-                if (m.has("documento") && !m.isNull("documento")) {
-                    String documentoUri = m.optString("documento", "");
-                    if (!documentoUri.isEmpty()) {
-                        documentoSelecionado = Uri.parse(documentoUri);
-                    }
-                }
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Erro ao carregar manutenção", Toast.LENGTH_SHORT).show();
-        }
+        DatePickerDialog dpd = new DatePickerDialog(this, (view, y, m, d) -> {
+            TimePickerDialog tpd = new TimePickerDialog(this, (timeView, h, min) -> {
+                c.set(y, m, d, h, min);
+                etDataHora.setText(formatoDataHora.format(c.getTime()));
+            }, hora, minuto, true);
+            tpd.show();
+        }, ano, mes, dia);
+        dpd.show();
     }
 
     private void salvarManutencao() {
-        try {
-            String tipo = etTipo.getText().toString().trim();
-            String dataHora = etDataHora.getText().toString().trim();
-            String local = etLocal.getText().toString().trim();
-            String servico = etServico.getText().toString().trim();
-            String responsavel = etResponsavel.getText().toString().trim();
-            String valor = etValor.getText().toString().trim();
-            String notas = etNotas.getText().toString().trim();
+        String tipo = etTipo.getText().toString().trim();
+        String dataHora = etDataHora.getText().toString().trim();
+        String local = etLocal.getText().toString().trim();
+        String servico = etServico.getText().toString().trim();
+        String responsavel = etResponsavel.getText().toString().trim();
+        String valor = etValor.getText().toString().trim();
+        String notas = etNotas.getText().toString().trim();
 
-            if (tipo.isEmpty() || dataHora.isEmpty() || servico.isEmpty()) {
-                Toast.makeText(this, "Preencha os campos obrigatórios!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Obter array existente
-            String listaJson = getSharedPreferences("manutencoes", MODE_PRIVATE)
-                    .getString("lista", "[]");
-            JSONArray array = new JSONArray(listaJson);
-
-            JSONObject m = new JSONObject();
-            m.put("tipo", tipo);
-            m.put("dataHora", dataHora);
-            m.put("local", local);
-            m.put("servico", servico);
-            m.put("responsavel", responsavel);
-            m.put("valor", valor);
-            m.put("notas", notas);
-
-            if (documentoSelecionado != null) {
-                m.put("documento", documentoSelecionado.toString());
-            } else {
-                m.put("documento", JSONObject.NULL);
-            }
-
-            if (indexEditando >= 0 && indexEditando < array.length()) {
-                // Edição - substitui o item existente
-                array.put(indexEditando, m);
-            } else {
-                // Novo - adiciona no final
-                array.put(m);
-            }
-
-            // Salvar no SharedPreferences
-            getSharedPreferences("manutencoes", MODE_PRIVATE)
-                    .edit()
-                    .putString("lista", array.toString())
-                    .apply();
-
-            Toast.makeText(this, "Manutenção salva!", Toast.LENGTH_SHORT).show();
-
-            if (indexEditando < 0) {
-                // Limpa campos após cadastro
-                etTipo.setText("");
-                etDataHora.setText("");
-                etLocal.setText("");
-                etServico.setText("");
-                etResponsavel.setText("");
-                etValor.setText("");
-                etNotas.setText("");
-                documentoSelecionado = null;
-            } else {
-                finish(); // fecha se for edição
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Erro ao salvar manutenção", Toast.LENGTH_SHORT).show();
+        if (tipo.isEmpty() || dataHora.isEmpty()) {
+            Toast.makeText(this, "Tipo e Data/Hora são obrigatórios!", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        Manutencao m;
+        if (indexEdicao >= 0) {
+            m = manutencaoDAO.getTodasManutencoes().get(indexEdicao);
+        } else {
+            m = new Manutencao();
+        }
+
+        m.setTipo(tipo);
+        m.setDataHora(dataHora);
+        m.setLocal(local);
+        m.setServico(servico);
+        m.setResponsavel(responsavel);
+        m.setValor(valor);
+        m.setNotas(notas);
+        m.setAnexos(anexos);
+
+        long result = manutencaoDAO.salvarManutencao(m);
+        if (result > 0) {
+            Toast.makeText(this, "Manutenção salva com sucesso!", Toast.LENGTH_SHORT).show();
+            limparCampos();
+        } else {
+            Toast.makeText(this, "Erro ao salvar manutenção!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void limparCampos() {
+        etTipo.setText("");
+        etDataHora.setText("");
+        etLocal.setText("");
+        etServico.setText("");
+        etResponsavel.setText("");
+        etValor.setText("");
+        etNotas.setText("");
+        anexos.clear();
+        indexEdicao = -1;
+    }
+
+    private void carregarManutencaoParaEdicao(int index) {
+        Manutencao m = manutencaoDAO.getTodasManutencoes().get(index);
+        if (m != null) {
+            etTipo.setText(m.getTipo());
+            etDataHora.setText(m.getDataHora());
+            etLocal.setText(m.getLocal());
+            etServico.setText(m.getServico());
+            etResponsavel.setText(m.getResponsavel());
+            etValor.setText(m.getValor());
+            etNotas.setText(m.getNotas());
+            anexos = m.getAnexos() != null ? m.getAnexos() : new ArrayList<>();
+        }
+    }
+
+    private String getFileName(Uri uri) {
+        String name = "Arquivo";
+        try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                name = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return name;
     }
 }

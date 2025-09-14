@@ -4,7 +4,7 @@
     android:padding="8dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#F0F0F0"
+    android:background="#F9F9F9"
     android:layout_marginBottom="8dp">
 
     <!-- Dados da manutenção -->
@@ -13,15 +13,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:textColor="@android:color/black"/>
+        android:textColor="@android:color/black"
+        android:padding="4dp" />
 
-    <!-- RecyclerView ou LinearLayout para anexos -->
+    <!-- Layout para anexos -->
     <LinearLayout
         android:id="@+id/layoutAnexosManutencao"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginTop="4dp"
+        android:padding="4dp"
+        android:background="#EEEEEE"/>
 
     <!-- Botões Editar e Excluir -->
     <LinearLayout
@@ -35,7 +38,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Editar"/>
+            android:text="Editar" />
 
         <Button
             android:id="@+id/btnExcluirManutencao"

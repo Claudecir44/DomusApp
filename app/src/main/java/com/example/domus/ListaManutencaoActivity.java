@@ -41,26 +41,25 @@ public class ListaManutencaoActivity extends AppCompatActivity {
         adapter = new ManutencaoAdapter(this, listaManutencoes, new ManutencaoAdapter.OnItemClickListener() {
             @Override
             public void onEditar(int position) {
-                Manutencao m = listaManutencoes.get(position);
                 Intent intent = new Intent(ListaManutencaoActivity.this, CadastroManutencaoActivity.class);
-                intent.putExtra("editarId", m.getId());
+                intent.putExtra("index", position);
                 startActivity(intent);
             }
 
             @Override
             public void onExcluir(int position) {
-                confirmarExclusao(listaManutencoes.get(position));
+                confirmarExclusao(listaManutencoes.get(position), position);
             }
         });
+
         recyclerViewManutencao.setAdapter(adapter);
     }
 
-    private void confirmarExclusao(final Manutencao manutencao) {
+    private void confirmarExclusao(final Manutencao manutencao, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Excluir Manutenção");
         builder.setMessage("Deseja realmente excluir esta manutenção?");
         builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
-            @Override
             public void onClick(DialogInterface dialog, int which) {
                 int linhas = manutencaoDAO.excluirManutencao(manutencao.getId());
                 if (linhas > 0) {
@@ -78,6 +77,6 @@ public class ListaManutencaoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        carregarLista(); // Recarrega a lista quando a activity retornar ao foco
+        carregarLista();
     }
 }
