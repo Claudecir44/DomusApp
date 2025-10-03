@@ -36,6 +36,14 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    // 🔥 ADICIONE ESTA CONFIGURAÇÃO PARA EVITAR CONFLITOS
+    packagingOptions {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
+        }
+    }
 }
 
 dependencies {
@@ -48,18 +56,22 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("io.ktor:ktor-client-okhttp:2.3.7")
 
-    // SUPABASE (APENAS ESTAS 3 - removido gotrue-kt)
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.2.3")
-    implementation("io.github.jan-tennert.supabase:realtime-kt:2.2.3")
-    implementation("io.github.jan-tennert.supabase:storage-kt:2.2.3")
+    // 🔥 SUPABASE SIMPLIFICADO - REMOVA AS ANTERIORES
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:1.4.1") // Versão mais estável
+    implementation("io.github.jan-tennert.supabase:realtime-kt:1.4.1")
+
+    // 🔥 HTTP CLIENT PARA SUPABASE INSERTER
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // 🔥 JSON PARA SUPABASE INSERTER
+    implementation("org.json:json:20231013")
 
     // OUTRAS DEPENDÊNCIAS
     implementation("androidx.biometric:biometric:1.2.0-alpha05")
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.github.bumptech.glide:glide:4.12.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0") // Versão atualizada
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

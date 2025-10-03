@@ -8,7 +8,7 @@ data class Admin(
     val usuario: String,
     val senha_hash: String,
     val tipo: String,
-    val data_cadastro: String? = null,
-    val created_at: String? = null,
-    val updated_at: String? = null
+    val data_cadastro: String? = null,   // equivalente ao campo local do SQLite
+    val created_at: String? = null,      // compatível com Supabase
+    val updated_at: String? = null       // compatível com Supabase
 )

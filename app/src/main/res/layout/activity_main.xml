@@ -31,6 +31,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- 🔥 BOTÕES ADICIONAIS (opcionais para teste) -->
+        <Button
+            android:id="@+id/btnTesteInserir"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TESTAR INSERÇÃO"
+            android:visibility="gone"
+            android:layout_margin="8dp"/>
+
+        <Button
+            android:id="@+id/btnTesteMultiplo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TESTE MÚLTIPLO"
+            android:visibility="gone"
+            android:layout_margin="8dp"/>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
