@@ -184,7 +184,7 @@ public class SupabaseSyncManager {
                 "despesas");
     }
 
-    // 🔹 SINCRONIZAR AVISOS
+    // 🔹 SINCRONIZAR AVISOS (CORRIGIDO - removido atualizado_em)
     public void sincronizarAvisos() {
         enviarParaSupabase(BDCondominioHelper.TABELA_AVISOS,
                 new String[]{
@@ -192,8 +192,8 @@ public class SupabaseSyncManager {
                         BDCondominioHelper.COL_AVISO_ASSUNTO,
                         BDCondominioHelper.COL_AVISO_DESCRICAO,
                         BDCondominioHelper.COL_AVISO_ANEXOS,
-                        BDCondominioHelper.COL_AVISO_CRIADO_EM,
-                        BDCondominioHelper.COL_AVISO_ATUALIZADO_EM
+                        BDCondominioHelper.COL_AVISO_CRIADO_EM
+                        // ❌ REMOVIDO: COL_AVISO_ATUALIZADO_EM
                 },
                 "avisos");
     }
@@ -211,13 +211,13 @@ public class SupabaseSyncManager {
                 if (!moradorExisteNoSupabase(cpf, email)) {
                     JSONObject morador = new JSONObject();
                     morador.put("nome", nome);
-                    morador.put("email", email);
-                    morador.put("telefone", telefone);
-                    morador.put("cpf", cpf);
-                    morador.put("rua", rua);
-                    morador.put("numero", numero);
-                    morador.put("quadra", quadra);
-                    morador.put("lote", lote);
+                    morador.put("email", email != null ? email : "");
+                    morador.put("telefone", telefone != null ? telefone : "");
+                    morador.put("cpf", cpf != null ? cpf : "");
+                    morador.put("rua", rua != null ? rua : "");
+                    morador.put("numero", numero != null ? numero : "");
+                    morador.put("quadra", quadra != null ? quadra : "");
+                    morador.put("lote", lote != null ? lote : "");
 
                     boolean sucesso = inserirNoSupabase("moradores", morador);
                     if (sucesso) {
@@ -247,13 +247,13 @@ public class SupabaseSyncManager {
                 if (idSupabase != null) {
                     JSONObject morador = new JSONObject();
                     morador.put("nome", nome);
-                    morador.put("email", email);
-                    morador.put("telefone", telefone);
-                    morador.put("cpf", cpf);
-                    morador.put("rua", rua);
-                    morador.put("numero", numero);
-                    morador.put("quadra", quadra);
-                    morador.put("lote", lote);
+                    morador.put("email", email != null ? email : "");
+                    morador.put("telefone", telefone != null ? telefone : "");
+                    morador.put("cpf", cpf != null ? cpf : "");
+                    morador.put("rua", rua != null ? rua : "");
+                    morador.put("numero", numero != null ? numero : "");
+                    morador.put("quadra", quadra != null ? quadra : "");
+                    morador.put("lote", lote != null ? lote : "");
 
                     boolean sucesso = atualizarNoSupabase("moradores", idSupabase, morador);
                     if (sucesso) {
@@ -418,7 +418,7 @@ public class SupabaseSyncManager {
             int responseCode = conn.getResponseCode();
             conn.disconnect();
 
-            return responseCode == 201;
+            return responseCode == 201 || responseCode == 200;
         } catch (Exception e) {
             Log.e(TAG, "💥 Erro ao inserir em " + tabela + ": " + e.getMessage());
             return false;
@@ -469,8 +469,8 @@ public class SupabaseSyncManager {
         connection.setRequestProperty("apikey", SUPABASE_ANON_KEY);
         connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_ANON_KEY);
         connection.setRequestProperty("Content-Type", "application/json");
-        connection.setConnectTimeout(10000);
-        connection.setReadTimeout(10000);
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(15000);
         return connection;
     }
 
@@ -482,8 +482,8 @@ public class SupabaseSyncManager {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Prefer", "return=minimal");
         conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(15000);
         return conn;
     }
 
@@ -495,8 +495,8 @@ public class SupabaseSyncManager {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Prefer", "return=minimal");
         conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(15000);
         return conn;
     }
 
@@ -506,12 +506,12 @@ public class SupabaseSyncManager {
         conn.setRequestProperty("apikey", SUPABASE_ANON_KEY);
         conn.setRequestProperty("Authorization", "Bearer " + SUPABASE_ANON_KEY);
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(10000);
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(15000);
         return conn;
     }
 
-    // 🔹 MÉTODO GENÉRICO DE ENVIO EM MASSA
+    // 🔹 MÉTODO GENÉRICO DE ENVIO EM MASSA (CORRIGIDO)
     private void enviarParaSupabase(String tabelaSQLite, String[] colunas, String tabelaSupabase) {
         new Thread(() -> {
             try {
@@ -521,15 +521,25 @@ public class SupabaseSyncManager {
                 Cursor cursor = db.query(tabelaSQLite, colunas, null, null, null, null, null);
                 JSONArray jsonArray = new JSONArray();
 
+                int registrosEnviados = 0;
                 while (cursor.moveToNext()) {
                     JSONObject obj = new JSONObject();
                     for (int i = 0; i < colunas.length; i++) {
+                        String coluna = colunas[i];
                         String valor = cursor.getString(i);
+
+                        // Mapear nomes de colunas se necessário
+                        String colunaSupabase = coluna;
+
+                        // Tratar valores nulos
                         if (valor != null) {
-                            obj.put(colunas[i], valor);
+                            obj.put(colunaSupabase, valor);
+                        } else {
+                            obj.put(colunaSupabase, "");
                         }
                     }
                     jsonArray.put(obj);
+                    registrosEnviados++;
                 }
 
                 cursor.close();
@@ -540,40 +550,63 @@ public class SupabaseSyncManager {
                     return;
                 }
 
-                Log.d(TAG, "📤 Enviando " + jsonArray.length() + " registros para Supabase [" + tabelaSupabase + "]");
+                Log.d(TAG, "📤 Enviando " + registrosEnviados + " registros para Supabase [" + tabelaSupabase + "]");
 
-                URL url = new URL(SUPABASE_URL + tabelaSupabase);
-                HttpURLConnection conn = criarConexaoPOST(url);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(jsonArray.toString().getBytes("UTF-8"));
-                os.flush();
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == 201 || responseCode == 200) {
-                    Log.d(TAG, "✅ Registros enviados com sucesso para " + tabelaSupabase);
-                } else {
-                    Log.e(TAG, "❌ Falha ao enviar para " + tabelaSupabase + " | Código: " + responseCode);
-                    try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
-                        StringBuilder errorResponse = new StringBuilder();
-                        String line;
-                        while ((line = errorReader.readLine()) != null) {
-                            errorResponse.append(line);
-                        }
-                        Log.e(TAG, "📋 Detalhes do erro: " + errorResponse);
-                    } catch (Exception e) {
-                        Log.e(TAG, "💥 Não foi possível ler detalhes do erro");
+                // Enviar em lotes menores para evitar timeout
+                int batchSize = 50;
+                for (int i = 0; i < jsonArray.length(); i += batchSize) {
+                    int end = Math.min(i + batchSize, jsonArray.length());
+                    JSONArray batch = new JSONArray();
+                    for (int j = i; j < end; j++) {
+                        batch.put(jsonArray.get(j));
                     }
+
+                    enviarLoteParaSupabase(tabelaSupabase, batch);
+                    Thread.sleep(500); // Pequena pausa entre lotes
                 }
 
-                conn.disconnect();
+                Log.d(TAG, "✅ Todos os registros enviados para " + tabelaSupabase);
 
             } catch (Exception e) {
-                Log.e(TAG, "💥 Erro ao enviar registros para Supabase: " + e.getMessage());
-                e.printStackTrace();
+                Log.e(TAG, "💥 Erro ao enviar registros para " + tabelaSupabase + ": " + e.getMessage());
             }
         }).start();
+    }
+
+    // 🔹 MÉTODO PARA ENVIAR LOTES
+    private void enviarLoteParaSupabase(String tabelaSupabase, JSONArray batch) {
+        try {
+            URL url = new URL(SUPABASE_URL + tabelaSupabase);
+            HttpURLConnection conn = criarConexaoPOST(url);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(batch.toString().getBytes("UTF-8"));
+            os.flush();
+            os.close();
+
+            int responseCode = conn.getResponseCode();
+
+            if (responseCode == 201 || responseCode == 200) {
+                Log.d(TAG, "✅ Lote de " + batch.length() + " registros enviado para " + tabelaSupabase);
+            } else {
+                Log.e(TAG, "❌ Falha no lote para " + tabelaSupabase + " | Código: " + responseCode);
+
+                // Ler resposta de erro para debug
+                try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+                    StringBuilder errorResponse = new StringBuilder();
+                    String line;
+                    while ((line = errorReader.readLine()) != null) {
+                        errorResponse.append(line);
+                    }
+                    Log.e(TAG, "📋 Detalhes do erro: " + errorResponse);
+                }
+            }
+
+            conn.disconnect();
+
+        } catch (Exception e) {
+            Log.e(TAG, "💥 Erro no lote para " + tabelaSupabase + ": " + e.getMessage());
+        }
     }
 
     // 🔹 MÉTODO DE TESTE COMPLETO
@@ -586,7 +619,7 @@ public class SupabaseSyncManager {
     public void testarConexao() {
         new Thread(() -> {
             try {
-                String urlCompleta = SUPABASE_URL + "moradores?select=count";
+                String urlCompleta = SUPABASE_URL + "moradores?select=count&limit=1";
                 HttpURLConnection connection = criarConexaoGET(urlCompleta);
 
                 int responseCode = connection.getResponseCode();
