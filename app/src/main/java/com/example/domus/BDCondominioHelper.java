@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -14,7 +16,7 @@ import java.util.Locale;
 public class BDCondominioHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "bdcondominio.db";
-    private static final int DATABASE_VERSION = 17; // 🔥 ATUALIZADO
+    private static final int DATABASE_VERSION = 19; // 🔥 ATUALIZADO PARA FORÇAR RECRIAÇÃO
 
     // Tabelas
     public static final String TABELA_MORADORES = "moradores";
@@ -122,8 +124,11 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         criarTodasTabelas(db);
-        criarAdminMaster(db);
-        Log.d("DB_HELPER", "✅ Banco SQLite criado com sincronização Supabase");
+        criarAdminMasterCorrigido(db); // 🔥 AGORA USA O MÉTODO CORRIGIDO
+        Log.d("DB_HELPER", "✅ Banco SQLite criado com admin 'admin/master'");
+
+        // 🔥 SINCRONIZAR ADMINS COM SUPABASE APÓS CRIAÇÃO
+        sincronizarAdminsComSupabase();
     }
 
     @Override
@@ -149,7 +154,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_USUARIOS_ADMIN);
 
         criarTodasTabelas(db);
-        criarAdminMaster(db);
+        criarAdminMasterCorrigido(db); // 🔥 AGORA USA O MÉTODO CORRIGIDO
     }
 
     private void criarTodasTabelas(SQLiteDatabase db) {
@@ -264,24 +269,81 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_ADMIN_DATA + " TEXT);");
     }
 
-    // --- ADMIN MASTER ---
-    private void criarAdminMaster(SQLiteDatabase db) {
+    // 🔥 MÉTODO CORRIGIDO: CRIAR APENAS ADMIN "admin" COM SENHA "master"
+    private void criarAdminMasterCorrigido(SQLiteDatabase db) {
         try {
+            // 🔥 LIMPAR TODOS OS USUÁRIOS EXISTENTES PRIMEIRO
+            db.delete(TABELA_USUARIOS_ADMIN, null, null);
+            Log.d("DB_HELPER", "🗑️ Todos os usuários anteriores removidos");
+
+            // 🔥 CALCULAR HASH CORRETO PARA SENHA "master"
+            String hashCorretoMaster = calcularSHA256("master");
+            Log.d("DB_HELPER", "🔑 Hash calculado para 'master': " + hashCorretoMaster);
+
+            // 🔥 CRIAR APENAS O USUÁRIO "admin" COM SENHA "master"
             ContentValues cv = new ContentValues();
-            cv.put(COL_ADMIN_USUARIO, "admin");
-            cv.put(COL_ADMIN_SENHA_HASH, gerarHash("master"));
+            cv.put(COL_ADMIN_USUARIO, "admin"); // 🔥 USUÁRIO: admin
+            cv.put(COL_ADMIN_SENHA_HASH, hashCorretoMaster); // 🔥 SENHA: master
             cv.put(COL_ADMIN_TIPO, "master");
             cv.put(COL_ADMIN_DATA, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-            db.insert(TABELA_USUARIOS_ADMIN, null, cv);
-            Log.d("DB_HELPER", "✅ Admin master criado com tipo 'master'");
+
+            long resultado = db.insert(TABELA_USUARIOS_ADMIN, null, cv);
+
+            if (resultado != -1) {
+                Log.d("DB_HELPER", "✅ ADMIN MASTER CRIADO COM SUCESSO:");
+                Log.d("DB_HELPER", "   👤 Usuário: admin");
+                Log.d("DB_HELPER", "   🔑 Senha: master");
+                Log.d("DB_HELPER", "   🔐 Hash: " + hashCorretoMaster);
+                Log.d("DB_HELPER", "   🏷️ Tipo: master");
+            } else {
+                Log.e("DB_HELPER", "❌ ERRO AO CRIAR ADMIN MASTER");
+            }
+
         } catch (Exception e) {
-            Log.e("DB_HELPER", "❌ Erro ao criar admin master: " + e.getMessage());
+            Log.e("DB_HELPER", "💥 ERRO CRÍTICO ao criar admin master: " + e.getMessage());
         }
     }
 
-    // 🔥 MÉTODOS CRUD COM SINCRONIZAÇÃO AUTOMÁTICA
+    // 🔧 MÉTODO PARA CALCULAR SHA-256 CORRETAMENTE
+    private String calcularSHA256(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes());
+            StringBuilder hexString = new StringBuilder();
 
-    // 🔹 INSERIR MORADOR COM SINCRONIZAÇÃO
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            Log.e("DB_HELPER", "❌ Erro ao calcular SHA-256: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // 🔥 NOVO MÉTODO: SINCRONIZAR ADMINS COM SUPABASE
+    private void sincronizarAdminsComSupabase() {
+        Log.d("DB_HELPER", "🔥 SINCRONIZANDO ADMINS COM SUPABASE");
+
+        new Thread(() -> {
+            try {
+                // Aguardar um pouco para garantir que o banco está pronto
+                Thread.sleep(2000);
+
+                // Sincronizar tabela de admins
+                if (syncManager != null) {
+                    syncManager.sincronizarTabelaEspecifica(TABELA_USUARIOS_ADMIN, "usuarios_admin");
+                }
+            } catch (Exception e) {
+                Log.e("DB_HELPER", "💥 Erro ao sincronizar admins: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    // 🔹 INSERIR MORADOR COM SINCRONIZAÇÃO MELHORADA
     public long inserirMorador(String cod, String nome, String cpf, String email,
                                String rua, String numero, String telefone,
                                String quadra, String lote, String imagemUri) {
@@ -305,9 +367,20 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
 
             if (id != -1) {
                 Log.d("DB_HELPER", "✅ Morador inserido localmente - ID: " + id);
-                // 🔥 SINCRONIZAR COM SUPABASE
+
+                // 🔥 SINCRONIZAR COM SUPABASE COM VERIFICAÇÃO
                 if (syncManager != null) {
-                    syncManager.sincronizarMoradorEspecifico(nome, email, telefone, cpf, rua, numero, quadra, lote);
+                    // Sincronizar em background
+                    new Thread(() -> {
+                        try {
+                            syncManager.sincronizarMoradorEspecifico(nome, email, telefone, cpf,
+                                    rua, numero, quadra, lote);
+                        } catch (Exception e) {
+                            Log.e("DB_HELPER", "💥 Erro na sincronização em background: " + e.getMessage());
+                        }
+                    }).start();
+                } else {
+                    Log.e("DB_HELPER", "❌ SyncManager é null");
                 }
             }
 
@@ -391,15 +464,17 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         return success;
     }
 
-    // 🔹 INSERIR ADMIN COM SINCRONIZAÇÃO
+    // 🔹 INSERIR ADMIN COM SINCRONIZAÇÃO CORRIGIDA
     public long inserirAdmin(String usuario, String senha, String tipo) {
         SQLiteDatabase db = this.getWritableDatabase();
         long id = -1;
 
         try {
+            String senhaHash = calcularSHA256(senha);
+
             ContentValues cv = new ContentValues();
             cv.put(COL_ADMIN_USUARIO, usuario);
-            cv.put(COL_ADMIN_SENHA_HASH, gerarHash(senha));
+            cv.put(COL_ADMIN_SENHA_HASH, senhaHash);
             cv.put(COL_ADMIN_TIPO, tipo);
             cv.put(COL_ADMIN_DATA, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
 
@@ -407,9 +482,32 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
 
             if (id != -1) {
                 Log.d("DB_HELPER", "✅ Admin inserido localmente - Usuário: " + usuario);
-                // 🔥 SINCRONIZAR COM SUPABASE
+
+                // 🔥 SINCRONIZAR COM SUPABASE COM VERIFICAÇÃO
                 if (syncManager != null) {
-                    syncManager.sincronizarAdminEspecifico(usuario, gerarHash(senha), tipo);
+                    // Verificar se usuário está autenticado
+                    if (!syncManager.isUsuarioLogado()) {
+                        Log.w("DB_HELPER", "⚠️ Usuário não autenticado. Admin salvo apenas localmente.");
+                        return id;
+                    }
+
+                    // Verificar se é superadmin (apenas superadmins podem criar outros admins)
+                    if (!"superadmin".equals(syncManager.getUserRole())) {
+                        Log.w("DB_HELPER", "⚠️ Apenas superadmins podem criar outros administradores");
+                        return id;
+                    }
+
+                    // Sincronizar em background
+                    new Thread(() -> {
+                        try {
+                            syncManager.sincronizarAdminEspecifico(usuario, senhaHash, tipo);
+                            Log.d("DB_HELPER", "🔄 Admin enviado para sincronização: " + usuario);
+                        } catch (Exception e) {
+                            Log.e("DB_HELPER", "💥 Erro na sincronização do admin: " + e.getMessage());
+                        }
+                    }).start();
+                } else {
+                    Log.e("DB_HELPER", "❌ SyncManager é null");
                 }
             }
 
@@ -420,51 +518,6 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         }
 
         return id;
-    }
-
-    // 🔹 BUSCAR TODOS OS MORADORES
-    public Cursor buscarTodosMoradores() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABELA_MORADORES, null, null, null, null, null, COL_NOME + " ASC");
-    }
-
-    // 🔹 BUSCAR MORADOR POR ID
-    public Cursor buscarMoradorPorId(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABELA_MORADORES, null, COL_ID + " = ?",
-                new String[]{String.valueOf(id)}, null, null, null);
-    }
-
-    // 🔹 VERIFICAR SE CPF JÁ EXISTE
-    public boolean cpfExiste(String cpf) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-
-        try {
-            cursor = db.query(TABELA_MORADORES, new String[]{COL_ID},
-                    COL_CPF + " = ?", new String[]{cpf},
-                    null, null, null);
-            return cursor != null && cursor.getCount() > 0;
-        } finally {
-            if (cursor != null) cursor.close();
-            db.close();
-        }
-    }
-
-    // 🔹 VERIFICAR SE EMAIL JÁ EXISTE
-    public boolean emailExiste(String email) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-
-        try {
-            cursor = db.query(TABELA_MORADORES, new String[]{COL_ID},
-                    COL_EMAIL + " = ?", new String[]{email},
-                    null, null, null);
-            return cursor != null && cursor.getCount() > 0;
-        } finally {
-            if (cursor != null) cursor.close();
-            db.close();
-        }
     }
 
     // --- MÉTODOS AUXILIARES ---
@@ -498,6 +551,14 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         Log.d("DB_HELPER", "⚡ SINCRONIZAÇÃO RÁPIDA");
         if (syncManager != null) {
             syncManager.sincronizacaoRapida();
+        }
+    }
+
+    // 🔥 NOVO MÉTODO: FORÇAR SINCRONIZAÇÃO DE ADMINS
+    public void forcarSincronizacaoAdmins() {
+        Log.d("DB_HELPER", "🔥 FORÇANDO SINCRONIZAÇÃO DE ADMINS");
+        if (syncManager != null) {
+            syncManager.sincronizarAdmins();
         }
     }
 
@@ -571,6 +632,54 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         return false;
     }
 
+    // 🔹 MÉTODO PARA SINCRONIZAR ADMINS MANUALMENTE (NOVO)
+    public void sincronizarAdminsManualmente() {
+        Log.d("DB_HELPER", "🔄 SINCRONIZANDO ADMINS MANUALMENTE");
+
+        if (syncManager == null) {
+            Log.e("DB_HELPER", "❌ SyncManager não disponível");
+            return;
+        }
+
+        if (!syncManager.isUsuarioLogado()) {
+            Log.w("DB_HELPER", "⚠️ Usuário não autenticado para sincronização");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                // Buscar todos os admins locais
+                SQLiteDatabase db = getReadableDatabase();
+                Cursor cursor = db.query(TABELA_USUARIOS_ADMIN,
+                        new String[]{COL_ADMIN_USUARIO, COL_ADMIN_SENHA_HASH, COL_ADMIN_TIPO, COL_ADMIN_DATA},
+                        null, null, null, null, null);
+
+                int adminsSincronizados = 0;
+
+                while (cursor.moveToNext()) {
+                    String usuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_ADMIN_USUARIO));
+                    String senhaHash = cursor.getString(cursor.getColumnIndexOrThrow(COL_ADMIN_SENHA_HASH));
+                    String tipo = cursor.getString(cursor.getColumnIndexOrThrow(COL_ADMIN_TIPO));
+
+                    // Sincronizar cada admin
+                    syncManager.sincronizarAdminEspecifico(usuario, senhaHash, tipo);
+                    adminsSincronizados++;
+
+                    // Pequena pausa para não sobrecarregar
+                    Thread.sleep(500);
+                }
+
+                cursor.close();
+                db.close();
+
+                Log.d("DB_HELPER", "✅ " + adminsSincronizados + " admins sincronizados com Supabase");
+
+            } catch (Exception e) {
+                Log.e("DB_HELPER", "💥 Erro na sincronização manual: " + e.getMessage());
+            }
+        }).start();
+    }
+
     // 🔹 MÉTODO PARA DEBUG DAS TABELAS
     public void debugTabelas() {
         Log.d("DB_HELPER", "📊 DEBUG DAS TABELAS:");
@@ -591,5 +700,13 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         } finally {
             if (cursor != null) cursor.close();
         }
+    }
+
+    // 🔹 MÉTODO PARA OBTER CREDENCIAIS DE TESTE
+    public String[] getCredenciaisTeste() {
+        return new String[]{
+                "admin", // 🔥 AGORA É "admin"
+                "master"  // 🔥 AGORA É "master"
+        };
     }
 }
