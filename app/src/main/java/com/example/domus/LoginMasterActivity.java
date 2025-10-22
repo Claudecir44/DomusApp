@@ -22,16 +22,17 @@ public class LoginMasterActivity extends AppCompatActivity {
     private EditText editUsuario, editSenha;
     private Button btnEntrar;
     private BDCondominioHelper dbHelper;
+    private SupabaseSyncManager syncManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_master);
 
-        // 🔥 LOG INICIAL
         android.util.Log.d("LOGIN_DEBUG", "=== LOGIN MASTER ACTIVITY INICIADA ===");
 
         dbHelper = new BDCondominioHelper(this);
+        syncManager = new SupabaseSyncManager(this);
 
         editUsuario = findViewById(R.id.editUsuario);
         editSenha = findViewById(R.id.editSenha);
@@ -39,16 +40,18 @@ public class LoginMasterActivity extends AppCompatActivity {
 
         btnEntrar.setOnClickListener(v -> validarLogin());
 
-        // 🔥 CRIAR ADMIN MASTER COM HASH CORRETO
-        criarAdminMasterComHashCorreto();
+        // Criar apenas o admin master
+        criarAdminMasterExclusivo();
 
-        // 🔥 MOSTRAR TODOS OS USUÁRIOS DO BANCO
-        mostrarTodosUsuarios();
+        // Preencher automaticamente para teste
+        editUsuario.setText("admin");
+        editSenha.setText("master");
     }
 
-    // 🔧 MÉTODO PARA CALCULAR SHA-256 CORRETAMENTE
     private String calcularSHA256(String input) {
         try {
+            if (input == null) return null;
+
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(input.getBytes());
             StringBuilder hexString = new StringBuilder();
@@ -59,76 +62,128 @@ public class LoginMasterActivity extends AppCompatActivity {
                 hexString.append(hex);
             }
 
-            return hexString.toString();
+            String resultado = hexString.toString();
+            android.util.Log.d("LOGIN_DEBUG", "🔑 Hash calculado para '" + input + "': " + resultado);
+            return resultado;
+
         } catch (NoSuchAlgorithmException e) {
             android.util.Log.e("LOGIN_DEBUG", "❌ Erro ao calcular SHA-256: " + e.getMessage());
             return null;
         }
     }
 
-    private void criarAdminMasterComHashCorreto() {
-        android.util.Log.d("LOGIN_DEBUG", "🔧 CRIANDO/VERIFICANDO ADMIN MASTER...");
+    private void criarAdminMasterExclusivo() {
+        android.util.Log.d("LOGIN_DEBUG", "🔧 CONFIGURANDO ADMIN MASTER EXCLUSIVO...");
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        // 🔥 CALCULAR HASH CORRETO para senha "master"
-        String hashCorretoMaster = calcularSHA256("master");
-        android.util.Log.d("LOGIN_DEBUG", "🔑 Hash correto para 'master': " + hashCorretoMaster);
+        try {
+            // REMOVER TODOS OS USUÁRIOS EXISTENTES
+            int deletados = db.delete(BDCondominioHelper.TABELA_USUARIOS_ADMIN, null, null);
+            android.util.Log.d("LOGIN_DEBUG", "🗑️ " + deletados + " usuários anteriores removidos");
 
-        // 🔥 PRIMEIRO: REMOVER TODOS OS USUÁRIOS EXISTENTES (para garantir apenas um admin)
-        db.delete(BDCondominioHelper.TABELA_USUARIOS_ADMIN, null, null);
-        android.util.Log.d("LOGIN_DEBUG", "🗑️ Todos os usuários anteriores removidos");
+            // CRIAR APENAS O ADMIN MASTER
+            String hashCorretoMaster = calcularSHA256("master");
 
-        // 🔥 AGORA CRIAR APENAS O USUÁRIO ADMIN MASTER CORRETO
-        ContentValues values = new ContentValues();
-        values.put(BDCondominioHelper.COL_ADMIN_USUARIO, "admin");
-        values.put(BDCondominioHelper.COL_ADMIN_SENHA_HASH, hashCorretoMaster);
-        values.put(BDCondominioHelper.COL_ADMIN_TIPO, "master");
-        values.put(BDCondominioHelper.COL_ADMIN_DATA,
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+            if (hashCorretoMaster == null) {
+                android.util.Log.e("LOGIN_DEBUG", "❌ ERRO: Hash não pôde ser calculado");
+                Toast.makeText(this, "Erro ao criar usuário master", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        long resultado = db.insert(BDCondominioHelper.TABELA_USUARIOS_ADMIN, null, values);
+            android.util.Log.d("LOGIN_DEBUG", "🔑 Hash para 'master': " + hashCorretoMaster);
 
-        if (resultado != -1) {
-            android.util.Log.d("LOGIN_DEBUG", "🎉 Admin master criado com sucesso!");
-            android.util.Log.d("LOGIN_DEBUG", "👤 Usuário: admin");
-            android.util.Log.d("LOGIN_DEBUG", "🔑 Senha: master");
-            android.util.Log.d("LOGIN_DEBUG", "🔐 Hash: " + hashCorretoMaster);
-            Toast.makeText(this, "Usuário master criado: admin/master", Toast.LENGTH_LONG).show();
-        } else {
-            android.util.Log.e("LOGIN_DEBUG", "❌ Erro ao criar admin master");
-            Toast.makeText(this, "Erro ao criar usuário master", Toast.LENGTH_SHORT).show();
+            ContentValues values = new ContentValues();
+            values.put("usuario", "admin");
+            values.put("senha_hash", hashCorretoMaster);
+            values.put("tipo", "master");
+            values.put("data_cadastro",
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+
+            long resultado = db.insert(BDCondominioHelper.TABELA_USUARIOS_ADMIN, null, values);
+
+            if (resultado != -1) {
+                android.util.Log.d("LOGIN_DEBUG", "🎉 Admin master criado com sucesso! ID: " + resultado);
+                Toast.makeText(this, "Usuário master configurado: admin/master", Toast.LENGTH_LONG).show();
+            } else {
+                android.util.Log.e("LOGIN_DEBUG", "❌ Erro ao criar admin master");
+                Toast.makeText(this, "Erro ao criar usuário master", Toast.LENGTH_SHORT).show();
+            }
+
+            // Mostrar usuários após criação
+            mostrarUsuariosExistentes();
+
+            // Sincronizar com Supabase após criar
+            new android.os.Handler().postDelayed(() -> {
+                syncManager.sincronizarAdminMaster();
+            }, 2000);
+
+        } catch (Exception e) {
+            android.util.Log.e("LOGIN_DEBUG", "💥 Erro crítico ao criar admin: " + e.getMessage());
+            Toast.makeText(this, "Erro crítico: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } finally {
+            db.close();
         }
-
-        db.close();
     }
 
-    private void mostrarTodosUsuarios() {
-        android.util.Log.d("LOGIN_DEBUG", "📋 LISTANDO TODOS OS USUÁRIOS DO BANCO:");
+    private void mostrarUsuariosExistentes() {
+        android.util.Log.d("LOGIN_DEBUG", "📋 VERIFICANDO USUÁRIOS NO BANCO LOCAL:");
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(BDCondominioHelper.TABELA_USUARIOS_ADMIN,
-                new String[]{"*"}, null, null, null, null, null);
+        Cursor cursor = null;
 
-        if (cursor != null && cursor.moveToFirst()) {
-            int count = 0;
-            do {
-                count++;
-                String usuario = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_USUARIO));
-                String hash = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_SENHA_HASH));
-                String tipo = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_TIPO));
-                String data = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_DATA));
+        try {
+            // Primeiro verificar se a tabela existe
+            Cursor tableCursor = db.rawQuery(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                    new String[]{BDCondominioHelper.TABELA_USUARIOS_ADMIN}
+            );
 
-                android.util.Log.d("LOGIN_DEBUG", "   " + count + ". 👤 " + usuario +
-                        " | 🏷️ " + tipo +
-                        " | 🔑 " + (hash != null ? hash.substring(0, 20) + "..." : "null") +
-                        " | 📅 " + data);
-            } while (cursor.moveToNext());
-            cursor.close();
-        } else {
-            android.util.Log.d("LOGIN_DEBUG", "   ❌ NENHUM USUÁRIO ENCONTRADO NO BANCO!");
+            boolean tabelaExiste = tableCursor != null && tableCursor.moveToFirst();
+            tableCursor.close();
+
+            if (!tabelaExiste) {
+                android.util.Log.e("LOGIN_DEBUG", "❌ TABELA NÃO EXISTE: " + BDCondominioHelper.TABELA_USUARIOS_ADMIN);
+                return;
+            }
+
+            cursor = db.query(BDCondominioHelper.TABELA_USUARIOS_ADMIN, null, null, null, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                android.util.Log.d("LOGIN_DEBUG", "✅ USUÁRIOS ENCONTRADOS:");
+                int count = 0;
+                do {
+                    count++;
+                    String usuario = cursor.getString(cursor.getColumnIndexOrThrow("usuario"));
+                    String hash = cursor.getString(cursor.getColumnIndexOrThrow("senha_hash"));
+                    String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipo"));
+                    String data = "";
+
+                    try {
+                        data = cursor.getString(cursor.getColumnIndexOrThrow("data_cadastro"));
+                    } catch (Exception e) {
+                        // Coluna data_cadastro pode não existir
+                    }
+
+                    android.util.Log.d("LOGIN_DEBUG", "   " + count + ". 👤 " + usuario +
+                            " | 🏷️ " + tipo +
+                            " | 🔑 " + (hash != null ? hash.substring(0, 16) + "..." : "null") +
+                            " | 📅 " + data);
+
+                } while (cursor.moveToNext());
+
+                android.util.Log.d("LOGIN_DEBUG", "📊 TOTAL: " + count + " usuário(s)");
+
+            } else {
+                android.util.Log.d("LOGIN_DEBUG", "   ❌ NENHUM USUÁRIO ENCONTRADO NA TABELA!");
+            }
+
+        } catch (Exception e) {
+            android.util.Log.e("LOGIN_DEBUG", "💥 Erro ao verificar usuários: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
-        db.close();
     }
 
     private void validarLogin() {
@@ -144,60 +199,68 @@ public class LoginMasterActivity extends AppCompatActivity {
             return;
         }
 
-        // 🔥 CALCULAR HASH DA SENHA DIGITADA
         String hashDigitado = calcularSHA256(senha);
-        android.util.Log.d("LOGIN_DEBUG", "   🔑 Hash calculado da senha digitada: " + hashDigitado);
+        android.util.Log.d("LOGIN_DEBUG", "   🔑 Hash calculado da senha: " + hashDigitado);
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(BDCondominioHelper.TABELA_USUARIOS_ADMIN,
-                new String[]{"*"},
-                BDCondominioHelper.COL_ADMIN_USUARIO + "=?",
-                new String[]{usuario},
-                null, null, null);
+        Cursor cursor = null;
 
-        if (cursor != null && cursor.moveToFirst()) {
-            String usuarioSalvo = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_USUARIO));
-            String hashSalvo = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_SENHA_HASH));
-            String tipoSalvo = cursor.getString(cursor.getColumnIndexOrThrow(BDCondominioHelper.COL_ADMIN_TIPO));
+        try {
+            cursor = db.query(BDCondominioHelper.TABELA_USUARIOS_ADMIN,
+                    new String[]{"usuario", "senha_hash", "tipo"},
+                    "usuario = ?",
+                    new String[]{usuario},
+                    null, null, null);
 
-            android.util.Log.d("LOGIN_DEBUG", "📊 USUÁRIO ENCONTRADO NO BANCO:");
-            android.util.Log.d("LOGIN_DEBUG", "   👤 Usuário: " + usuarioSalvo);
-            android.util.Log.d("LOGIN_DEBUG", "   🔑 Hash salvo: " + hashSalvo);
-            android.util.Log.d("LOGIN_DEBUG", "   🏷️ Tipo: " + tipoSalvo);
-            android.util.Log.d("LOGIN_DEBUG", "   ✅ Hash correto? " + (hashDigitado != null && hashDigitado.equals(hashSalvo)));
-            android.util.Log.d("LOGIN_DEBUG", "   👑 É master? " + "master".equals(tipoSalvo));
+            if (cursor != null && cursor.moveToFirst()) {
+                String usuarioSalvo = cursor.getString(cursor.getColumnIndexOrThrow("usuario"));
+                String hashSalvo = cursor.getString(cursor.getColumnIndexOrThrow("senha_hash"));
+                String tipoSalvo = cursor.getString(cursor.getColumnIndexOrThrow("tipo"));
 
-            cursor.close();
-            db.close();
+                android.util.Log.d("LOGIN_DEBUG", "📊 DADOS ENCONTRADOS NO BANCO:");
+                android.util.Log.d("LOGIN_DEBUG", "   👤 Usuário salvo: " + usuarioSalvo);
+                android.util.Log.d("LOGIN_DEBUG", "   🏷️ Tipo salvo: " + tipoSalvo);
+                android.util.Log.d("LOGIN_DEBUG", "   🔑 Hash salvo: " + hashSalvo);
+                android.util.Log.d("LOGIN_DEBUG", "   🔑 Hash digitado: " + hashDigitado);
+                android.util.Log.d("LOGIN_DEBUG", "   ✅ Hash confere? " + (hashDigitado != null && hashDigitado.equals(hashSalvo)));
+                android.util.Log.d("LOGIN_DEBUG", "   👑 É master? " + "master".equals(tipoSalvo));
 
-            // 🔥 VALIDAÇÃO FINAL
-            if ("master".equals(tipoSalvo) && hashDigitado != null && hashDigitado.equals(hashSalvo)) {
-                android.util.Log.d("LOGIN_DEBUG", "🎉🎉🎉 LOGIN MASTER BEM-SUCEDIDO! 🎉🎉🎉");
-                Toast.makeText(this, "Login master realizado com sucesso!", Toast.LENGTH_SHORT).show();
+                if ("master".equals(tipoSalvo) && hashDigitado != null && hashDigitado.equals(hashSalvo)) {
+                    android.util.Log.d("LOGIN_DEBUG", "🎉🎉🎉 LOGIN MASTER BEM-SUCEDIDO! 🎉🎉🎉");
+                    Toast.makeText(this, "Login master realizado com sucesso!", Toast.LENGTH_SHORT).show();
 
-                Intent intent = new Intent(LoginMasterActivity.this, LoginAdminActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
+                    // Sincronizar com Supabase antes de prosseguir
+                    syncManager.sincronizarAdminMaster();
+
+                    Intent intent = new Intent(LoginMasterActivity.this, LoginAdminActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+
+                } else {
+                    if (!"master".equals(tipoSalvo)) {
+                        android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Usuário não é master");
+                        Toast.makeText(this, "Acesso permitido apenas para administrador master!", Toast.LENGTH_SHORT).show();
+                    } else if (hashDigitado == null || !hashDigitado.equals(hashSalvo)) {
+                        android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Senha incorreta");
+                        Toast.makeText(this, "Senha incorreta!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Credenciais inválidas");
+                        Toast.makeText(this, "Credenciais inválidas!", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
             } else {
-                if (!"master".equals(tipoSalvo)) {
-                    android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Usuário não é master");
-                    Toast.makeText(this, "Acesso permitido apenas para administrador master!", Toast.LENGTH_SHORT).show();
-                } else {
-                    android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Hash não confere");
-                    android.util.Log.d("LOGIN_DEBUG", "   Esperado: " + hashSalvo);
-                    android.util.Log.d("LOGIN_DEBUG", "   Calculado: " + hashDigitado);
-                    Toast.makeText(this, "Senha incorreta!", Toast.LENGTH_SHORT).show();
-                }
+                android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Usuário não encontrado: " + usuario);
+                Toast.makeText(this, "Usuário não encontrado!", Toast.LENGTH_SHORT).show();
             }
 
-        } else {
+        } catch (Exception e) {
+            android.util.Log.e("LOGIN_DEBUG", "💥 Erro durante validação: " + e.getMessage());
+            Toast.makeText(this, "Erro durante login: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } finally {
             if (cursor != null) cursor.close();
             db.close();
-
-            android.util.Log.d("LOGIN_DEBUG", "❌ FALHA: Usuário não encontrado: " + usuario);
-            Toast.makeText(this, "Usuário não encontrado!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -206,9 +269,7 @@ public class LoginMasterActivity extends AppCompatActivity {
         super.onResume();
         android.util.Log.d("LOGIN_DEBUG", "=== TELA LOGIN MASTER VISÍVEL ===");
 
-        // 🔥 ATUALIZAR LISTA DE USUÁRIOS SEMPRE QUE A TELA VOLTAR AO FOCO
-        new android.os.Handler().postDelayed(() -> {
-            mostrarTodosUsuarios();
-        }, 500);
+        // Verificar usuários sempre que a tela ficar visível
+        new android.os.Handler().postDelayed(this::mostrarUsuariosExistentes, 500);
     }
 }

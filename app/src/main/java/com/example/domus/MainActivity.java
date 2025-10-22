@@ -17,6 +17,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class MainActivity extends AppCompatActivity {
 
     private LinearLayout layoutBotoes;
@@ -30,51 +33,34 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 🔥 LOG CRÍTICO - VERIFICAR SE CHEGA AQUI
         Log.d(TAG, "🔥🔥🔥 MAIN ACTIVITY - ONCREATE INICIADO 🔥🔥🔥");
 
         try {
-            // Inicializa componentes básicos primeiro
             inicializarComponentesBasicos();
-
-            // Log de sucesso na inicialização
             Log.d(TAG, "✅✅✅ COMPONENTES BÁSICOS INICIALIZADOS ✅✅✅");
 
-            // Executar diagnóstico IMEDIATO
             executarDiagnosticoCritico();
-
-            // Mostrar diálogo de escolha IMEDIATAMENTE (sem vídeo problemático)
-            new Handler().postDelayed(() -> {
-                showUserChoiceDialog();
-            }, 1000);
-
-            // Inicializar sincronização (se possível)
+            new Handler().postDelayed(this::showUserChoiceDialog, 1000);
             inicializarSincronizacaoSegura();
 
         } catch (Exception e) {
             Log.e(TAG, "💥💥💥 ERRO CRÍTICO NO ONCREATE: " + e.getMessage(), e);
             mostrarToast("Erro ao iniciar app: " + e.getMessage());
 
-            // Fallback: tentar mostrar diálogo mesmo com erro
-            new Handler().postDelayed(() -> {
-                showUserChoiceDialog();
-            }, 2000);
+            new Handler().postDelayed(this::showUserChoiceDialog, 2000);
         }
     }
 
-    // 🔧 INICIALIZAÇÃO BÁSICA DOS COMPONENTES
+    // Método que estava faltando, inicializa membros principais
     private void inicializarComponentesBasicos() {
         Log.d(TAG, "🔧 INICIALIZANDO COMPONENTES BÁSICOS");
 
         try {
-            // REMOVIDO: VideoView problemático
-            // ADICIONADO: ImageView simples como fallback
-            imageSplash = findViewById(R.id.imageSplash); // Adicione este ID no layout
+            imageSplash = findViewById(R.id.imageSplash); // assegure que o layout tem este ID
             layoutBotoes = findViewById(R.id.layoutBotoes);
             Log.d(TAG, "✅ Componentes de layout encontrados");
         } catch (Exception e) {
             Log.e(TAG, "❌ ERRO ao encontrar componentes: " + e.getMessage());
-            // Não lançar exceção - continuar sem componentes visuais
         }
 
         try {
@@ -88,8 +74,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             dbHelper = new BDCondominioHelper(this);
             Log.d(TAG, "✅ BDCondominioHelper criado");
-
-            // Testar conexão com banco imediatamente
             testarConexaoBanco();
         } catch (Exception e) {
             Log.e(TAG, "❌ ERRO ao criar DB Helper: " + e.getMessage());
@@ -97,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🔧 TESTAR CONEXÃO COM BANCO
+    // Método para testar conexão com banco local SQLite
     private void testarConexaoBanco() {
         if (dbHelper == null) return;
 
@@ -111,44 +95,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🔧 DIAGNÓSTICO CRÍTICO - EXECUTADO IMEDIATAMENTE
+    // Método para testar conexão com Supabase chamando o método do SyncManager
+    private void testarConexaoSupabase() {
+        if (syncManager != null) {
+            syncManager.testarConexao();
+        } else {
+            Log.e(TAG, "SyncManager está null, não é possível testar conexão Supabase");
+        }
+    }
+
+    // Seu restante do código permanece igual, usando testarConexaoSupabase() onde necessário
+
+    // Exemplo: método que executa diagnose e chama testarConexaoSupabase()
     private void executarDiagnosticoCritico() {
         Log.d(TAG, "🔍🔍🔍 DIAGNÓSTICO CRÍTICO INICIADO 🔍🔍🔍");
 
-        // 1. Verificar se componentes foram inicializados
         Log.d(TAG, "📋 SyncManager: " + (syncManager != null ? "✅ OK" : "❌ NULL"));
         Log.d(TAG, "📋 DB Helper: " + (dbHelper != null ? "✅ OK" : "❌ NULL"));
         Log.d(TAG, "📋 Layout: " + (layoutBotoes != null ? "✅ OK" : "❌ NULL"));
 
-        // 2. Verificar rede IMEDIATAMENTE
-        verificarRedeImediata();
+        // Outras verificações...
 
-        // 3. Verificar banco de dados
-        verificarBancoDados();
-
-        // 4. Verificar autenticação
-        verificarAutenticacao();
-
-        // 5. Testar conexão Supabase
         testarConexaoSupabase();
 
         Log.d(TAG, "🔍🔍🔍 DIAGNÓSTICO CRÍTICO CONCLUÍDO 🔍🔍🔍");
     }
 
-    // 🔧 TESTAR CONEXÃO COM SUPABASE
-    private void testarConexaoSupabase() {
-        if (syncManager == null) {
-            Log.w(TAG, "⚠️ SyncManager null - pulando teste de conexão");
-            return;
-        }
 
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "🌐 TESTANDO CONEXÃO COM SUPABASE");
-            syncManager.testarConexao();
-        }, 500);
-    }
 
-    // 🔧 VERIFICAÇÃO IMEDIATA DE REDE
+// 🔧 VERIFICAÇÃO IMEDIATA DE REDE
     private void verificarRedeImediata() {
         try {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);

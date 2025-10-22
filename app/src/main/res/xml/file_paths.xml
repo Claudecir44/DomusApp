@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Arquivos externos gerais -->
-    <external-path name="external_files" path="."/>
+    <!-- Para arquivos internos do app -->
+    <files-path name="app_files" path="." />
 
-    <!-- Arquivos internos do app -->
-    <files-path name="internal_files" path="."/>
-    <files-path name="files" path="."/>
+    <!-- Para cache interno -->
+    <cache-path name="app_cache" path="." />
 
-    <!-- Cache interno -->
-    <cache-path name="cache" path="."/>
+    <!-- Para arquivos em armazenamento externo -->
+    <external-path name="external_files" path="." />
 
-    <!-- Arquivos externos específicos do app -->
-    <external-files-path name="external_app_files" path="."/>
-    <external-cache-path name="external_app_cache" path="."/>
+    <!-- Para arquivos externos específicos do app -->
+    <external-files-path name="app_external_files" path="." />
 
 </paths>

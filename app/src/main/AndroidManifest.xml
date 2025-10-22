@@ -2,17 +2,33 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissões -->
-
+    <!-- Permissões CORRIGIDAS -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- Biometria - Atualizado para API moderna -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Armazenamento - Adaptado para Android 10+ -->
+    <!-- Para Android 10+ (API 29+), use scoped storage -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- Para Android 13+ (API 33+), use as novas permissões -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+    <!-- Permissão para notificações (se usar no futuro) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"
+        tools:ignore="UnusedAttribute" />
+
+    <!-- Permissão para trabalho em background -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"
+        tools:ignore="UnusedAttribute" />
+
+    <!-- Permissão para acesso a câmera (se necessário no futuro) -->
+    <uses-permission android:name="android.permission.CAMERA"
+        tools:ignore="UnusedAttribute" />
 
     <application
         android:allowBackup="true"
@@ -23,56 +39,105 @@
         android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:targetApi="31">
-
-        <!-- Activities -->
-        <activity android:name=".ImageViewerActivity" android:exported="false" />
-        <activity android:name=".ListaAvisosActivity" android:exported="false" />
-        <activity android:name=".CadastroAvisosActivity" android:exported="false" />
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31"
+        tools:ignore="GoogleAppIndexingWarning">
 
         <!-- MAIN ACTIVITY -->
-        <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="sensor">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="sensor"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Login Activities -->
-        <activity android:name=".LoginMoradorActivity" android:exported="false" />
-        <activity android:name=".LoginMasterActivity" android:exported="false" />
-        <activity android:name=".LoginAdminActivity" android:exported="false" />
+        <!-- Activities de Login -->
+        <activity android:name=".LoginMoradorActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".LoginMasterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".LoginAdminActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
-        <!-- Administração -->
+        <!-- Activities de Administração -->
         <activity android:name=".AdministradoresActivity" android:exported="false" />
+        <activity android:name=".DashBoardActivity" android:exported="false" />
+
+        <!-- Activities de Gestão de Conteúdo -->
+        <activity android:name=".ListaAvisosActivity" android:exported="false" />
+        <activity android:name=".CadastroAvisosActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".ListaDespesasActivity" android:exported="false" />
-        <activity android:name=".RegistroDespesasActivity" android:exported="false" />
+        <activity android:name=".RegistroDespesasActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".ListaAssembleiasActivity" android:exported="false" />
-        <activity android:name=".RegistroAssembleiasActivity" android:exported="false" />
+        <activity android:name=".RegistroAssembleiasActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".ListaManutencaoActivity" android:exported="false" />
-        <activity android:name=".CadastroManutencaoActivity" android:exported="false" />
+        <activity android:name=".CadastroManutencaoActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".ListaFuncionariosActivity" android:exported="false" />
-        <activity android:name=".CadastroFuncionarioActivity" android:exported="false" />
+        <activity android:name=".CadastroFuncionarioActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".FuncionariosActivity" android:exported="false" />
+
         <activity android:name=".ListaOcorrenciasActivity" android:exported="false" />
-        <activity android:name=".RegistroOcorrenciasActivity" android:exported="false" />
+        <activity android:name=".RegistroOcorrenciasActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".BackupActivity" android:exported="false" />
+
         <activity android:name=".ListaMoradoresActivity" android:exported="false" />
         <activity android:name=".CadastroMoradorActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".DashBoardActivity" android:exported="false" />
+
+        <!-- Visualizador de Imagens -->
+        <activity android:name=".ImageViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <!-- Service para sincronização em background (opcional) -->
+        <service
+            android:name=".sync.SyncService"
+            android:enabled="true"
+            android:exported="false"
+            tools:ignore="ExportedService" />
 
         <!-- Provider para anexos via FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- WorkManager para sincronização -->
+        <provider
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            android:exported="false"
+            tools:node="remove" />
 
     </application>
 
