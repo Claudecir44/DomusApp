@@ -3,6 +3,7 @@ package com.example.domus;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -26,19 +27,18 @@ public class ListaAvisosActivity extends AppCompatActivity {
 
     private LinearLayout layoutAvisos;
     private AvisoDAO avisoDAO;
-    private String tipoUsuario; // Variável para controlar o tipo de usuário
+    private String tipoUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Obter o tipo de usuário
         tipoUsuario = getIntent().getStringExtra("tipo_usuario");
         if (tipoUsuario == null) {
-            tipoUsuario = "admin"; // Padrão para admin se não especificado
+            tipoUsuario = "admin";
         }
 
-        // Criar layout principal
+        // Layout principal (mantido igual)
         LinearLayout mainLayout = new LinearLayout(this);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
         mainLayout.setLayoutParams(new LinearLayout.LayoutParams(
@@ -46,7 +46,7 @@ public class ListaAvisosActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT
         ));
 
-        // Adicionar título "Avisos" no topo
+        // Título
         TextView tvTitulo = new TextView(this);
         tvTitulo.setText("Avisos");
         tvTitulo.setTextSize(22);
@@ -60,10 +60,9 @@ public class ListaAvisosActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         tvTitulo.setLayoutParams(tituloParams);
-
         mainLayout.addView(tvTitulo);
 
-        // Criar ScrollView para a lista de avisos
+        // ScrollView
         ScrollView scrollView = new ScrollView(this);
         scrollView.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -87,7 +86,6 @@ public class ListaAvisosActivity extends AppCompatActivity {
         List<JSONObject> avisos = avisoDAO.listarAvisos();
         layoutAvisos.removeAllViews();
 
-        // Mensagem se não houver avisos
         if (avisos.isEmpty()) {
             TextView tvVazio = new TextView(this);
             tvVazio.setText("Nenhum aviso cadastrado");
@@ -103,7 +101,7 @@ public class ListaAvisosActivity extends AppCompatActivity {
             final int position = i;
             final long avisoId = aviso.optLong("id");
 
-            // Card para cada aviso
+            // Card do aviso
             LinearLayout cardAviso = new LinearLayout(this);
             cardAviso.setOrientation(LinearLayout.VERTICAL);
             cardAviso.setPadding(16, 16, 16, 16);
@@ -123,11 +121,10 @@ public class ListaAvisosActivity extends AppCompatActivity {
             tvData.setTextColor(getResources().getColor(android.R.color.darker_gray));
             cardAviso.addView(tvData);
 
-            // Linha em branco
+            // Espaço
             View espaco1 = new View(this);
             espaco1.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    10
+                    LinearLayout.LayoutParams.MATCH_PARENT, 10
             ));
             cardAviso.addView(espaco1);
 
@@ -136,14 +133,12 @@ public class ListaAvisosActivity extends AppCompatActivity {
             tvAssunto.setText("Assunto:\n " + aviso.optString("assunto"));
             tvAssunto.setTextSize(18);
             tvAssunto.setTextColor(getResources().getColor(android.R.color.black));
-            tvAssunto.setPadding(0, 0, 0, 0);
             cardAviso.addView(tvAssunto);
 
-            // Linha em branco
+            // Espaço
             View espaco2 = new View(this);
             espaco2.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    10
+                    LinearLayout.LayoutParams.MATCH_PARENT, 10
             ));
             cardAviso.addView(espaco2);
 
@@ -155,19 +150,18 @@ public class ListaAvisosActivity extends AppCompatActivity {
             tvDescricao.setPadding(0, 0, 0, 16);
             cardAviso.addView(tvDescricao);
 
-            // Linha em branco
+            // Espaço
             View espaco3 = new View(this);
             espaco3.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    10
+                    LinearLayout.LayoutParams.MATCH_PARENT, 10
             ));
             cardAviso.addView(espaco3);
 
-            // Verificar se há anexos
+            // Anexos - CORREÇÃO PRINCIPAL AQUI
             try {
                 JSONArray jsonAnexos = new JSONArray(aviso.optString("anexos", "[]"));
                 if (jsonAnexos.length() > 0) {
-                    // Subtítulo "Documentos em Anexo:"
+                    // Subtítulo
                     TextView tvSubtituloAnexos = new TextView(this);
                     tvSubtituloAnexos.setText("Documentos em Anexo:");
                     tvSubtituloAnexos.setTextSize(16);
@@ -176,7 +170,7 @@ public class ListaAvisosActivity extends AppCompatActivity {
                     tvSubtituloAnexos.setPadding(0, 0, 0, 8);
                     cardAviso.addView(tvSubtituloAnexos);
 
-                    // Anexos
+                    // Layout para anexos
                     LinearLayout layoutAnexos = new LinearLayout(this);
                     layoutAnexos.setOrientation(LinearLayout.HORIZONTAL);
                     layoutAnexos.setPadding(0, 8, 0, 16);
@@ -185,36 +179,54 @@ public class ListaAvisosActivity extends AppCompatActivity {
                         String path = jsonAnexos.optString(j);
                         File file = new File(path);
 
+                        // Container para cada anexo
+                        LinearLayout containerAnexo = new LinearLayout(this);
+                        containerAnexo.setOrientation(LinearLayout.VERTICAL);
+                        containerAnexo.setPadding(0, 0, 16, 0);
+
                         ImageView img = new ImageView(this);
                         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(120, 120);
-                        params.setMargins(0, 0, 16, 0);
                         img.setLayoutParams(params);
                         img.setPadding(8, 8, 8, 8);
                         img.setBackgroundResource(R.drawable.image_border);
 
+                        // TextView para o nome do arquivo
+                        TextView tvNomeArquivo = new TextView(this);
+                        tvNomeArquivo.setLayoutParams(new LinearLayout.LayoutParams(
+                                120, LinearLayout.LayoutParams.WRAP_CONTENT
+                        ));
+                        tvNomeArquivo.setText(getNomeArquivoCompactado(file.getName()));
+                        tvNomeArquivo.setTextSize(10);
+                        tvNomeArquivo.setGravity(Gravity.CENTER);
+                        tvNomeArquivo.setMaxLines(2);
+                        tvNomeArquivo.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
                         if (file.exists()) {
-                            if (file.getName().toLowerCase().endsWith(".jpg") ||
-                                    file.getName().toLowerCase().endsWith(".png") ||
-                                    file.getName().toLowerCase().endsWith(".jpeg")) {
+                            if (isImagem(file.getName())) {
+                                // CORREÇÃO: Usar FileProvider para carregar imagens
+                                try {
+                                    Uri imageUri = FileProvider.getUriForFile(
+                                            this,
+                                            getPackageName() + ".provider",
+                                            file
+                                    );
+                                    img.setImageURI(imageUri);
+                                    img.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-                                // Carregar imagem
-                                img.setImageURI(Uri.fromFile(file));
-                                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                    // Clique para ampliar
+                                    final String imagePath = path;
+                                    img.setOnClickListener(v -> {
+                                        Intent intent = new Intent(ListaAvisosActivity.this, ImageViewerActivity.class);
+                                        intent.putExtra("imagePath", imagePath);
+                                        startActivity(intent);
+                                    });
 
-                                // Clique para ampliar imagem
-                                final String imagePath = path;
-                                img.setOnClickListener(v -> {
-                                    Intent intent = new Intent(ListaAvisosActivity.this, ImageViewerActivity.class);
-                                    intent.putExtra("imagePath", imagePath);
-                                    startActivity(intent);
-                                });
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    img.setImageResource(R.drawable.ic_document);
+                                }
 
-                            } else if (file.getName().toLowerCase().endsWith(".pdf") ||
-                                    file.getName().toLowerCase().endsWith(".doc") ||
-                                    file.getName().toLowerCase().endsWith(".docx") ||
-                                    file.getName().toLowerCase().endsWith(".xls") ||
-                                    file.getName().toLowerCase().endsWith(".xlsx")) {
-
+                            } else {
                                 // Ícone para documentos
                                 img.setImageResource(R.drawable.ic_document);
                                 img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
@@ -222,41 +234,35 @@ public class ListaAvisosActivity extends AppCompatActivity {
                                 // Clique para abrir documento
                                 final String docPath = path;
                                 img.setOnClickListener(v -> abrirArquivoComAppExterno(docPath));
-
-                            } else {
-                                // Ícone genérico para outros arquivos
-                                img.setImageResource(android.R.drawable.ic_menu_report_image);
-                                img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-
-                                // Clique para tentar abrir o arquivo
-                                final String filePath = path;
-                                img.setOnClickListener(v -> abrirArquivoComAppExterno(filePath));
                             }
                         } else {
                             // Arquivo não encontrado
                             img.setImageResource(android.R.drawable.ic_delete);
                             img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                            tvNomeArquivo.setText("Arquivo\nnão encontrado");
                         }
 
-                        layoutAnexos.addView(img);
+                        containerAnexo.addView(img);
+                        containerAnexo.addView(tvNomeArquivo);
+                        layoutAnexos.addView(containerAnexo);
                     }
                     cardAviso.addView(layoutAnexos);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                Log.e("LISTA_AVISOS", "Erro ao carregar anexos: " + e.getMessage());
             }
 
             // Linha separadora
             View separador = new View(this);
             separador.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    1
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1
             ));
             separador.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
             separador.setPadding(0, 8, 0, 8);
             cardAviso.addView(separador);
 
-            // Container para os botões Editar e Excluir - SOMENTE PARA ADMIN
+            // Botões Editar/Excluir (apenas para admin)
             if (!"morador".equalsIgnoreCase(tipoUsuario)) {
                 LinearLayout layoutBotoes = new LinearLayout(this);
                 layoutBotoes.setOrientation(LinearLayout.HORIZONTAL);
@@ -297,7 +303,6 @@ public class ListaAvisosActivity extends AppCompatActivity {
 
                 btnExcluir.setOnClickListener(v -> mostrarConfirmacaoExclusao(avisoId, position, aviso));
 
-                // Adicionar botões ao layout
                 layoutBotoes.addView(btnEditar);
                 layoutBotoes.addView(btnExcluir);
                 cardAviso.addView(layoutBotoes);
@@ -305,6 +310,27 @@ public class ListaAvisosActivity extends AppCompatActivity {
 
             layoutAvisos.addView(cardAviso);
         }
+    }
+
+    // Método auxiliar para verificar se é imagem
+    private boolean isImagem(String fileName) {
+        String nome = fileName.toLowerCase();
+        return nome.endsWith(".jpg") || nome.endsWith(".jpeg") ||
+                nome.endsWith(".png") || nome.endsWith(".gif");
+    }
+
+    // Método para compactar nome do arquivo
+    private String getNomeArquivoCompactado(String fileName) {
+        if (fileName.length() <= 15) {
+            return fileName;
+        }
+        String extensao = "";
+        int lastDot = fileName.lastIndexOf('.');
+        if (lastDot > 0) {
+            extensao = fileName.substring(lastDot);
+            fileName = fileName.substring(0, lastDot);
+        }
+        return fileName.substring(0, 12) + ".." + extensao;
     }
 
     private void mostrarConfirmacaoExclusao(long avisoId, int position, JSONObject aviso) {
@@ -338,13 +364,10 @@ public class ListaAvisosActivity extends AppCompatActivity {
 
     private void excluirAviso(long avisoId, int position, JSONObject aviso) {
         try {
-            // Primeiro, excluir os arquivos físicos dos anexos
             excluirArquivosAnexos(aviso);
 
-            // Depois, excluir o aviso do banco de dados
             if (avisoDAO.excluirAviso(avisoId)) {
                 Toast.makeText(this, "Aviso excluído com sucesso", Toast.LENGTH_SHORT).show();
-                // Recarregar a lista
                 exibirAvisos();
             } else {
                 Toast.makeText(this, "Erro ao excluir aviso", Toast.LENGTH_SHORT).show();
@@ -374,27 +397,22 @@ public class ListaAvisosActivity extends AppCompatActivity {
         try {
             File file = new File(filePath);
             if (file.exists()) {
-                // Gerar URI usando FileProvider
                 Uri uri = FileProvider.getUriForFile(
                         this,
                         getPackageName() + ".provider",
                         file
                 );
 
-                // Determinar o tipo MIME
                 String mimeType = obterTipoMime(file.getName());
 
-                // Criar intent para abrir o arquivo
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setDataAndType(uri, mimeType);
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                // Verificar se há app disponível
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                 } else {
-                    // Tentar com tipo MIME genérico
                     Intent intentGenerico = new Intent(Intent.ACTION_VIEW);
                     intentGenerico.setDataAndType(uri, "*/*");
                     intentGenerico.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -402,15 +420,15 @@ public class ListaAvisosActivity extends AppCompatActivity {
                     if (intentGenerico.resolveActivity(getPackageManager()) != null) {
                         startActivity(intentGenerico);
                     } else {
-                        Toast.makeText(this, "Nenhum app encontrado para abrir este tipo de arquivo", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Nenhum app encontrado para abrir este arquivo", Toast.LENGTH_SHORT).show();
                     }
                 }
             } else {
-                Toast.makeText(this, "Arquivo não encontrado: " + filePath, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Arquivo não encontrado", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Erro ao abrir arquivo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Erro ao abrir arquivo", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -426,15 +444,13 @@ public class ListaAvisosActivity extends AppCompatActivity {
         if (nomeArquivo.endsWith(".png")) return "image/png";
         if (nomeArquivo.endsWith(".txt")) return "text/plain";
         if (nomeArquivo.endsWith(".zip")) return "application/zip";
-        if (nomeArquivo.endsWith(".rar")) return "application/x-rar-compressed";
 
-        return "*/*"; // Tipo genérico
+        return "*/*";
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Recarregar avisos quando retornar à tela
         exibirAvisos();
     }
 

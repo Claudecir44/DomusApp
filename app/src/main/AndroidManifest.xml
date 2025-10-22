@@ -121,10 +121,10 @@
             android:exported="false"
             tools:ignore="ExportedService" />
 
-        <!-- Provider para anexos via FileProvider -->
+        <!-- Provider para anexos via FileProvider - CORRIGIDO -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

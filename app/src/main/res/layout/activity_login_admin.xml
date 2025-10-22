@@ -3,94 +3,125 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#F8F9FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:padding="20dp"
+        android:elevation="4dp"
+        android:backgroundTint="@android:color/white">
 
         <!-- Título -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login Administrador"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="24dp"
+            android:textColor="#333333"/>
 
         <!-- Campos de Login -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:textColor="#555555"/>
+
         <EditText
             android:id="@+id/editLoginAdmin"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="50dp"
             android:hint="Usuário"
             android:inputType="textPersonName"
-            android:padding="10dp"
-            android:layout_marginBottom="8dp"/>
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="#333333"
+            android:textColorHint="#999999"/>
 
         <EditText
             android:id="@+id/editLoginSenha"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="50dp"
             android:hint="Senha"
             android:inputType="textPassword"
-            android:padding="10dp"
-            android:layout_marginBottom="16dp"/>
+            android:padding="12dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="#333333"
+            android:textColorHint="#999999"/>
 
         <Button
             android:id="@+id/btnEntrar"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="50dp"
             android:text="Entrar"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@color/botaoCameras"
-            android:textColor="@android:color/white"/>
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/button_background"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
 
         <!-- Separador -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginBottom="16dp"/>
+            android:background="#E0E0E0"
+            android:layout_marginBottom="24dp"/>
 
         <!-- Campos de Cadastro -->
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="12dp"
             android:gravity="center"
             android:text="Cadastrar-se"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="#333333" />
 
         <EditText
             android:id="@+id/editCadastroAdmin"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="50dp"
             android:hint="Usuário"
             android:inputType="textPersonName"
-            android:padding="10dp"
-            android:layout_marginBottom="8dp"/>
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="#333333"
+            android:textColorHint="#CDCCCC"/>
 
         <EditText
             android:id="@+id/editCadastroSenha"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="50dp"
             android:hint="Senha (6 dígitos)"
             android:inputType="numberPassword"
-            android:padding="10dp"
-            android:layout_marginBottom="16dp"/>
+            android:padding="12dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/edittext_background"
+            android:textColor="#333333"
+            android:textColorHint="#FABAB8B8"/>
 
         <Button
             android:id="@+id/btnCadastrar"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="50dp"
             android:text="Cadastrar"
-            android:backgroundTint="@color/botaoCameras"
-            android:textColor="@android:color/white"/>
+            android:background="@drawable/button_background"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
 
     </LinearLayout>
 </ScrollView>
