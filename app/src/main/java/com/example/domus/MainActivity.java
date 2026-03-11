@@ -1,10 +1,6 @@
 package com.example.domus;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -18,18 +14,12 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.Drawable;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
     private LinearLayout layoutBotoes;
     private static final String TAG = "DomusMain";
-    private SupabaseSyncManager syncManager;
     private BDCondominioHelper dbHelper;
     private ImageView imageSplash;
 
@@ -46,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
 
             executarDiagnosticoCritico();
             new Handler().postDelayed(this::showUserChoiceDialog, 1000);
-            inicializarSincronizacaoSegura();
 
         } catch (Exception e) {
             Log.e(TAG, "💥💥💥 ERRO CRÍTICO NO ONCREATE: " + e.getMessage(), e);
@@ -56,24 +45,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Método que estava faltando, inicializa membros principais
+    // Método que inicializa membros principais
     private void inicializarComponentesBasicos() {
         Log.d(TAG, "🔧 INICIALIZANDO COMPONENTES BÁSICOS");
 
         try {
-            imageSplash = findViewById(R.id.imageSplash); // assegure que o layout tem este ID
+            imageSplash = findViewById(R.id.imageSplash);
             layoutBotoes = findViewById(R.id.layoutBotoes);
             Log.d(TAG, "✅ Componentes de layout encontrados");
         } catch (Exception e) {
             Log.e(TAG, "❌ ERRO ao encontrar componentes: " + e.getMessage());
-        }
-
-        try {
-            syncManager = new SupabaseSyncManager(this);
-            Log.d(TAG, "✅ SupabaseSyncManager criado");
-        } catch (Exception e) {
-            Log.e(TAG, "❌ ERRO ao criar SyncManager: " + e.getMessage());
-            syncManager = null;
         }
 
         try {
@@ -100,35 +81,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Método para testar conexão com Supabase chamando o método do SyncManager
-    private void testarConexaoSupabase() {
-        if (syncManager != null) {
-            syncManager.testarConexao();
-        } else {
-            Log.e(TAG, "SyncManager está null, não é possível testar conexão Supabase");
-        }
-    }
-
-    // Seu restante do código permanece igual, usando testarConexaoSupabase() onde necessário
-
-    // Exemplo: método que executa diagnose e chama testarConexaoSupabase()
+    // Método que executa diagnose
     private void executarDiagnosticoCritico() {
         Log.d(TAG, "🔍🔍🔍 DIAGNÓSTICO CRÍTICO INICIADO 🔍🔍🔍");
 
-        Log.d(TAG, "📋 SyncManager: " + (syncManager != null ? "✅ OK" : "❌ NULL"));
         Log.d(TAG, "📋 DB Helper: " + (dbHelper != null ? "✅ OK" : "❌ NULL"));
         Log.d(TAG, "📋 Layout: " + (layoutBotoes != null ? "✅ OK" : "❌ NULL"));
-
-        // Outras verificações...
-
-        testarConexaoSupabase();
 
         Log.d(TAG, "🔍🔍🔍 DIAGNÓSTICO CRÍTICO CONCLUÍDO 🔍🔍🔍");
     }
 
-
-
-// 🔧 VERIFICAÇÃO IMEDIATA DE REDE
+    // 🔧 VERIFICAÇÃO IMEDIATA DE REDE (apenas para verificar conectividade local)
     private void verificarRedeImediata() {
         try {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
@@ -137,10 +100,9 @@ public class MainActivity extends AppCompatActivity {
             if (activeNetwork != null && activeNetwork.isConnected()) {
                 Log.d(TAG, "🌐✅ REDE DISPONÍVEL: " + activeNetwork.getTypeName());
                 Log.d(TAG, "📶 Conectado: " + activeNetwork.isConnected());
-                Log.d(TAG, "🔗 Tipo: " + getTipoRedeDetalhado(activeNetwork.getType()));
             } else {
                 Log.e(TAG, "🌐❌ SEM CONEXÃO DE REDE");
-                mostrarToast("⚠️ Sem conexão de internet - Sincronização limitada");
+                mostrarToast("⚠️ Sem conexão de internet");
             }
         } catch (Exception e) {
             Log.e(TAG, "💥 Erro ao verificar rede: " + e.getMessage());
@@ -171,27 +133,6 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             Log.e(TAG, "💥 Erro ao verificar banco: " + e.getMessage());
-        }
-    }
-
-    // 🔧 VERIFICAÇÃO DE AUTENTICAÇÃO
-    private void verificarAutenticacao() {
-        if (syncManager == null) {
-            Log.w(TAG, "⚠️ SyncManager null - pulando verificação de auth");
-            return;
-        }
-
-        try {
-            if (syncManager.isUsuarioLogado()) {
-                Log.d(TAG, "🔐✅ USUÁRIO AUTENTICADO: " + syncManager.getUsuarioEmail());
-                Log.d(TAG, "👤 Role: " + syncManager.getUserRole());
-                Log.d(TAG, "👑 Admin: " + syncManager.isAdmin());
-            } else {
-                Log.w(TAG, "🔐⚠️ USUÁRIO NÃO AUTENTICADO");
-                Log.d(TAG, "💡 Dica: Faça login para habilitar sincronização em tempo real");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro ao verificar autenticação: " + e.getMessage());
         }
     }
 
@@ -243,48 +184,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🔧 SINCRONIZAÇÃO SEGURA (COM TRATAMENTO DE ERROS)
-    private void inicializarSincronizacaoSegura() {
-        Log.d(TAG, "🔄 TENTANDO SINCRONIZAÇÃO SEGURA");
-
-        if (syncManager == null) {
-            Log.e(TAG, "❌ SyncManager null - pulando sincronização");
-            return;
-        }
-
-        // Verificar condições antes de sincronizar
-        if (!syncManager.isUsuarioLogado()) {
-            Log.w(TAG, "⚠️ Usuário não autenticado - sincronização adiada");
-            Log.d(TAG, "💡 Dica: Faça login como admin para habilitar sincronização automática");
-            return;
-        }
-
-        if (!isRedeDisponivel()) {
-            Log.w(TAG, "⚠️ Sem rede - sincronização adiada");
-            return;
-        }
-
-        try {
-            // Sincronizar após 3 segundos
-            new Handler().postDelayed(() -> {
-                Log.d(TAG, "🔄 INICIANDO SINCRONIZAÇÃO PRINCIPAL");
-                syncManager.sincronizacaoRapida();
-
-                // Verificar status após sincronização
-                new Handler().postDelayed(this::verificarStatusAposSincronizacao, 3000);
-            }, 3000);
-
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro na sincronização: " + e.getMessage());
-        }
-    }
-
-    // 🔧 VERIFICAR STATUS APÓS SINCRONIZAÇÃO
-    private void verificarStatusAposSincronizacao() {
-        Log.d(TAG, "📊 STATUS PÓS-SINCRONIZAÇÃO:");
-        verificarStatusCompleto();
-    }
-
     // Verifica se existe admin registrado
     private boolean isAdminRegistered() {
         if (dbHelper == null) {
@@ -324,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🔧 VERIFICAR SE REDE ESTÁ DISPONÍVEL
+    // 🔧 VERIFICAR SE REDE ESTÁ DISPONÍVEL (apenas para info)
     private boolean isRedeDisponivel() {
         try {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
@@ -336,66 +235,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🔧 OBTER TIPO DE REDE DETALHADO
-    private String getTipoRedeDetalhado(int tipo) {
-        switch (tipo) {
-            case ConnectivityManager.TYPE_WIFI:
-                return "WiFi";
-            case ConnectivityManager.TYPE_MOBILE:
-                return "Dados Móveis";
-            case ConnectivityManager.TYPE_ETHERNET:
-                return "Ethernet";
-            case ConnectivityManager.TYPE_VPN:
-                return "VPN";
-            default:
-                return "Desconhecido (" + tipo + ")";
-        }
-    }
-
     // 🔧 MOSTRAR TOAST
     private void mostrarToast(String mensagem) {
         runOnUiThread(() -> Toast.makeText(this, mensagem, Toast.LENGTH_LONG).show());
     }
 
-    // 🔧 FORÇAR SINCRONIZAÇÃO MANUAL
-    private void forcarSincronizacaoManual() {
-        Log.d(TAG, "🔄 SOLICITAÇÃO DE SINCRONIZAÇÃO MANUAL");
-
-        if (syncManager == null) {
-            Log.e(TAG, "❌ SyncManager null - não é possível sincronizar");
-            mostrarToast("Erro: Sistema não inicializado corretamente");
-            return;
-        }
-
-        if (!syncManager.isUsuarioLogado()) {
-            Log.w(TAG, "⚠️ Usuário não autenticado");
-            mostrarToast("🔐 Faça login como administrador primeiro");
-            return;
-        }
-
-        if (!isRedeDisponivel()) {
-            Log.w(TAG, "⚠️ Sem conexão de rede");
-            mostrarToast("🌐 Sem conexão com a internet");
-            return;
-        }
-
-        try {
-            mostrarToast("🔄 Iniciando sincronização...");
-            syncManager.sincronizacaoRapida();
-
-            // Verificar resultado após 5 segundos
-            new Handler().postDelayed(() -> {
-                mostrarToast("📊 Sincronização em andamento...");
-                verificarStatusCompleto();
-            }, 5000);
-
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro na sincronização manual: " + e.getMessage());
-            mostrarToast("❌ Erro na sincronização");
-        }
-    }
-
-    // 🔧 VERIFICAR STATUS COMPLETO
+    // 🔧 VERIFICAR STATUS COMPLETO (apenas local)
     private void verificarStatusCompleto() {
         Log.d(TAG, "📊 VERIFICAÇÃO DE STATUS COMPLETA");
 
@@ -434,21 +279,5 @@ public class MainActivity extends AppCompatActivity {
 
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
-    }
-
-    // 🔧 MÉTODO PÚBLICO PARA ACTIVITIES FILHAS
-    public void sincronizarAposInsercao() {
-        Log.d(TAG, "🔄 SINCRONIZAÇÃO PÓS-INSERÇÃO SOLICITADA");
-
-        if (syncManager != null && syncManager.isUsuarioLogado() && syncManager.isAdmin()) {
-            new Handler().postDelayed(() -> {
-                if (syncManager != null) {
-                    syncManager.sincronizacaoRapida();
-                    Log.d(TAG, "✅ Sincronização pós-inserção executada");
-                }
-            }, 1000);
-        } else {
-            Log.w(TAG, "⚠️ Sincronização pós-inserção ignorada - sem permissão");
-        }
     }
 }

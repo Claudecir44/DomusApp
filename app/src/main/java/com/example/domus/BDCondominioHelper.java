@@ -16,7 +16,7 @@ import java.util.Locale;
 public class BDCondominioHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "bdcondominio.db";
-    private static final int DATABASE_VERSION = 19; // Aumentei a versão
+    private static final int DATABASE_VERSION = 19; // Mantive a versão
 
     // Tabelas
     public static final String TABELA_MORADORES = "moradores";
@@ -55,7 +55,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     public static final String COL_OCOR_DESCRICAO = "descricao";
     public static final String COL_OCOR_DATAHORA = "datahora";
     public static final String COL_OCOR_ANEXOS = "anexos";
-    public static final String COL_OCOR_STATUS = "status"; // ADICIONADA
+    public static final String COL_OCOR_STATUS = "status";
 
     // Colunas Funcionarios
     public static final String COL_FUNC_ID = "id";
@@ -112,15 +112,10 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
     public static final String COL_AVISO_ANEXOS = "anexos";
     public static final String COL_AVISO_CRIADO_EM = "criado_em";
     public static final String COL_AVISO_ATUALIZADO_EM = "atualizado_em";
-    public static final String COL_AVISO_PRIORIDADE = "prioridade"; // ADICIONADA
-
-    private Context context;
-    private SupabaseSyncManager syncManager;
+    public static final String COL_AVISO_PRIORIDADE = "prioridade";
 
     public BDCondominioHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context = context;
-        this.syncManager = new SupabaseSyncManager(context);
     }
 
     @Override
@@ -129,11 +124,6 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         criarTodasTabelas(db);
         criarAdminMaster(db);
         Log.d("DB_HELPER", "✅ Banco SQLite criado com sucesso");
-
-        // Sincronizar após um delay
-        new android.os.Handler().postDelayed(() -> {
-            sincronizarAdminsComSupabase();
-        }, 3000);
     }
 
     @Override
@@ -207,7 +197,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_OCOR_ENVOLVIDOS + " TEXT, " +
                 COL_OCOR_DESCRICAO + " TEXT NOT NULL, " +
                 COL_OCOR_DATAHORA + " TEXT NOT NULL, " +
-                COL_OCOR_STATUS + " TEXT DEFAULT 'pendente', " + // COLUNA ADICIONADA
+                COL_OCOR_STATUS + " TEXT DEFAULT 'pendente', " +
                 COL_OCOR_ANEXOS + " TEXT);";
         db.execSQL(sql);
     }
@@ -277,7 +267,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
                 COL_AVISO_DATAHORA + " TEXT NOT NULL, " +
                 COL_AVISO_ASSUNTO + " TEXT NOT NULL, " +
                 COL_AVISO_DESCRICAO + " TEXT, " +
-                COL_AVISO_PRIORIDADE + " TEXT DEFAULT 'normal', " + // COLUNA ADICIONADA
+                COL_AVISO_PRIORIDADE + " TEXT DEFAULT 'normal', " +
                 COL_AVISO_ANEXOS + " TEXT, " +
                 COL_AVISO_CRIADO_EM + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 COL_AVISO_ATUALIZADO_EM + " DATETIME DEFAULT CURRENT_TIMESTAMP);";
@@ -304,7 +294,7 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
             ContentValues cv = new ContentValues();
             cv.put(COL_ADMIN_USUARIO, "admin");
             cv.put(COL_ADMIN_SENHA_HASH, gerarHash("master"));
-            cv.put(COL_ADMIN_TIPO, "master"); // CORRIGIDO: era "superadmin", agora "master"
+            cv.put(COL_ADMIN_TIPO, "master");
             cv.put(COL_ADMIN_DATA, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
 
             long resultado = db.insert(TABELA_USUARIOS_ADMIN, null, cv);
@@ -317,24 +307,6 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             Log.e("DB_HELPER", "💥 Erro ao criar admin master: " + e.getMessage());
         }
-    }
-
-    private void sincronizarAdminsComSupabase() {
-        Log.d("DB_HELPER", "🔥 INICIANDO SINCRONIZAÇÃO COM SUPABASE");
-        new Thread(() -> {
-            try {
-                Thread.sleep(3000); // Aguardar inicialização
-                if (syncManager != null) {
-                    syncManager.sincronizarAdminMaster(); // Sincronizar apenas o master primeiro
-                    Thread.sleep(2000);
-                    syncManager.sincronizarAdmins(); // Sincronizar todos os admins
-                } else {
-                    Log.e("DB_HELPER", "❌ SyncManager não disponível");
-                }
-            } catch (Exception e) {
-                Log.e("DB_HELPER", "💥 Erro ao sincronizar admins: " + e.getMessage());
-            }
-        }).start();
     }
 
     public static String gerarHash(String senha) {
@@ -374,45 +346,6 @@ public class BDCondominioHelper extends SQLiteOpenHelper {
             db.close();
         }
         return false;
-    }
-
-    public void sincronizarAdminsManualmente() {
-        Log.d("DB_HELPER", "🔄 SINCRONIZANDO ADMINS MANUALMENTE");
-
-        if (syncManager == null) {
-            Log.e("DB_HELPER", "❌ SyncManager não disponível");
-            return;
-        }
-
-        new Thread(() -> {
-            try {
-                SQLiteDatabase db = getReadableDatabase();
-                Cursor cursor = db.query(TABELA_USUARIOS_ADMIN,
-                        new String[]{COL_ADMIN_USUARIO, COL_ADMIN_SENHA_HASH, COL_ADMIN_TIPO},
-                        null, null, null, null, null);
-
-                int adminsSincronizados = 0;
-
-                while (cursor != null && cursor.moveToNext()) {
-                    String usuario = cursor.getString(cursor.getColumnIndexOrThrow(COL_ADMIN_USUARIO));
-                    String senhaHash = cursor.getString(cursor.getColumnIndexOrThrow(COL_ADMIN_SENHA_HASH));
-                    String tipo = cursor.getString(cursor.getColumnIndexOrThrow(COL_ADMIN_TIPO));
-
-                    syncManager.sincronizarAdminEspecifico(usuario, senhaHash, tipo);
-                    adminsSincronizados++;
-
-                    Thread.sleep(500); // Delay para não sobrecarregar
-                }
-
-                if (cursor != null) cursor.close();
-                db.close();
-
-                Log.d("DB_HELPER", "✅ " + adminsSincronizados + " admins sincronizados com Supabase");
-
-            } catch (Exception e) {
-                Log.e("DB_HELPER", "💥 Erro na sincronização manual: " + e.getMessage());
-            }
-        }).start();
     }
 
     public boolean tabelaExiste(String tabelaNome) {

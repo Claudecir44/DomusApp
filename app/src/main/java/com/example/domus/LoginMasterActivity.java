@@ -22,7 +22,6 @@ public class LoginMasterActivity extends AppCompatActivity {
     private EditText editUsuario, editSenha;
     private Button btnEntrar;
     private BDCondominioHelper dbHelper;
-    private SupabaseSyncManager syncManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +31,6 @@ public class LoginMasterActivity extends AppCompatActivity {
         android.util.Log.d("LOGIN_DEBUG", "=== LOGIN MASTER ACTIVITY INICIADA ===");
 
         dbHelper = new BDCondominioHelper(this);
-        syncManager = new SupabaseSyncManager(this);
 
         editUsuario = findViewById(R.id.editUsuario);
         editSenha = findViewById(R.id.editSenha);
@@ -112,11 +110,6 @@ public class LoginMasterActivity extends AppCompatActivity {
 
             // Mostrar usuários após criação
             mostrarUsuariosExistentes();
-
-            // Sincronizar com Supabase após criar
-            new android.os.Handler().postDelayed(() -> {
-                syncManager.sincronizarAdminMaster();
-            }, 2000);
 
         } catch (Exception e) {
             android.util.Log.e("LOGIN_DEBUG", "💥 Erro crítico ao criar admin: " + e.getMessage());
@@ -228,9 +221,6 @@ public class LoginMasterActivity extends AppCompatActivity {
                 if ("master".equals(tipoSalvo) && hashDigitado != null && hashDigitado.equals(hashSalvo)) {
                     android.util.Log.d("LOGIN_DEBUG", "🎉🎉🎉 LOGIN MASTER BEM-SUCEDIDO! 🎉🎉🎉");
                     Toast.makeText(this, "Login master realizado com sucesso!", Toast.LENGTH_SHORT).show();
-
-                    // Sincronizar com Supabase antes de prosseguir
-                    syncManager.sincronizarAdminMaster();
 
                     Intent intent = new Intent(LoginMasterActivity.this, LoginAdminActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
