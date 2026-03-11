@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView; // <-- IMPORT ADICIONADA
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -81,23 +82,28 @@ public class DashBoardActivity extends AppCompatActivity {
     }
 
     private void ajustarLayoutParaMorador() {
+        // Encontra o TextView do título pelo ID
+        TextView textTitulo = findViewById(R.id.textTitulo);
+
         // Ajusta as constraints para centralizar os botões visíveis (apenas listas)
         androidx.constraintlayout.widget.ConstraintLayout.LayoutParams paramsListaAssembleias =
                 (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) btnListaAssembleias.getLayoutParams();
-        paramsListaAssembleias.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
-        paramsListaAssembleias.topMargin = 150; // Ajustado para dar espaço para mais botões
+
+        // Conecta o primeiro botão abaixo do título com uma margem maior
+        paramsListaAssembleias.topToBottom = textTitulo.getId();
+        paramsListaAssembleias.topMargin = 120; // Aumentei para 120dp para dar mais espaço entre título e primeiro botão
         btnListaAssembleias.setLayoutParams(paramsListaAssembleias);
 
         androidx.constraintlayout.widget.ConstraintLayout.LayoutParams paramsListaDespesas =
                 (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) btnListaDespesas.getLayoutParams();
         paramsListaDespesas.topToBottom = btnListaAssembleias.getId();
-        paramsListaDespesas.topMargin = 32;
+        paramsListaDespesas.topMargin = 16; // Mantive 16dp entre os botões
         btnListaDespesas.setLayoutParams(paramsListaDespesas);
 
         androidx.constraintlayout.widget.ConstraintLayout.LayoutParams paramsListaAvisos =
                 (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) btnListaAvisos.getLayoutParams();
         paramsListaAvisos.topToBottom = btnListaDespesas.getId();
-        paramsListaAvisos.topMargin = 32;
+        paramsListaAvisos.topMargin = 16; // Mantive 16dp entre os botões
         btnListaAvisos.setLayoutParams(paramsListaAvisos);
     }
 
