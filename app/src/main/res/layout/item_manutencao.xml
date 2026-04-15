@@ -1,51 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="8dp"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#F9F9F9"
-    android:layout_marginBottom="8dp">
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <!-- Dados da manutenção -->
-    <TextView
-        android:id="@+id/tvManutencaoDados"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="@android:color/black"
-        android:padding="4dp" />
-
-    <!-- Layout para anexos -->
-    <LinearLayout
-        android:id="@+id/layoutAnexosManutencao"
         android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:padding="4dp"
-        android:background="#EEEEEE"/>
+        android:padding="16dp">
 
-    <!-- Botões Editar e Excluir -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp">
-
-        <Button
-            android:id="@+id/btnEditarManutencao"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+        <!-- Dados da manutenção -->
+        <TextView
+            android:id="@+id/tvManutencaoDados"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Editar" />
+            android:textSize="14sp"
+            android:textColor="#374151"
+            android:lineSpacingExtra="4dp" />
 
-        <Button
-            android:id="@+id/btnExcluirManutencao"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+        <!-- Layout para anexos -->
+        <LinearLayout
+            android:id="@+id/layoutAnexosManutencao"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Excluir"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginTop="12dp"
+            android:padding="8dp"
+            android:background="#F3F4F6"
+            android:visibility="gone"/>
+
+        <!-- Botões Editar e Excluir -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnEditarManutencao"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Editar"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textAllCaps="false"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp" />
+
+            <Button
+                android:id="@+id/btnExcluirManutencao"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Excluir"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textAllCaps="false"
+                android:backgroundTint="#EF4444"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.cardview.widget.CardView>

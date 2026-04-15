@@ -1,101 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/layoutOcorrenciaItem"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <!-- Cabeçalho: Tipo e Data -->
-    <TextView
-        android:id="@+id/textTipoOcorrencia"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:text="Tipo"/>
-
-    <TextView
-        android:id="@+id/textDataHoraOcorrencia"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Data/Hora"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp"/>
-
-    <!-- Layout Expandido -->
     <LinearLayout
-        android:id="@+id/layoutExpandido"
+        android:id="@+id/layoutOcorrenciaItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone"
-        android:paddingTop="4dp">
+        android:padding="16dp"
+        android:background="?android:attr/selectableItemBackground">
 
-        <!-- Descrição -->
+        <!-- Cabeçalho: Tipo -->
         <TextView
-            android:id="@+id/textDescricaoTitulo"
+            android:id="@+id/textTipoOcorrencia"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Descrição"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/textDescricaoExpandida"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Descrição completa"/>
-
-        <!-- Envolvidos -->
-        <TextView
-            android:id="@+id/textEnvolvidosTitulo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Envolvidos"
             android:textStyle="bold"
-            android:layout_marginTop="4dp"/>
-        <TextView
-            android:id="@+id/textEnvolvidos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:textSize="16sp"
+            android:text="Tipo"
+            android:textColor="#1A1A2E"/>
 
-        <!-- Anexos -->
+        <!-- Data/Hora -->
         <TextView
-            android:id="@+id/textAnexosTitulo"
+            android:id="@+id/textDataHoraOcorrencia"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Anexos"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp"/>
+            android:text="Data/Hora"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Layout Expandido -->
         <LinearLayout
-            android:id="@+id/layoutAnexos"
+            android:id="@+id/layoutExpandido"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="2dp"/>
+            android:visibility="gone"
+            android:layout_marginTop="8dp">
 
-        <!-- Botões Editar / Excluir -->
-        <LinearLayout
-            android:id="@+id/layoutBotoes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end"
-            android:layout_marginTop="4dp"
-            android:visibility="gone">
-
-            <Button
-                android:id="@+id/buttonEditar"
-                android:layout_width="wrap_content"
+            <!-- Descrição -->
+            <TextView
+                android:id="@+id/textDescricaoTitulo"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Editar"/>
+                android:text="Descrição"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#1A1A2E"/>
 
-            <Button
-                android:id="@+id/buttonExcluir"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/textDescricaoExpandida"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Excluir"
-                android:layout_marginStart="8dp"/>
+                android:text="Descrição completa"
+                android:textSize="14sp"
+                android:textColor="#374151"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Envolvidos -->
+            <TextView
+                android:id="@+id/textEnvolvidosTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Envolvidos"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#1A1A2E"
+                android:layout_marginTop="4dp"/>
+
+            <TextView
+                android:id="@+id/textEnvolvidos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#374151"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Anexos -->
+            <TextView
+                android:id="@+id/textAnexosTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Anexos"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#1A1A2E"
+                android:layout_marginTop="4dp"/>
+
+            <LinearLayout
+                android:id="@+id/layoutAnexos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Botões Editar / Excluir -->
+            <LinearLayout
+                android:id="@+id/layoutBotoes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end"
+                android:layout_marginTop="8dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/buttonEditar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Editar"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03"
+                    android:textAllCaps="false"
+                    android:backgroundTint="#3B82F6"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="6dp"/>
+
+                <Button
+                    android:id="@+id/buttonExcluir"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Excluir"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.03"
+                    android:textAllCaps="false"
+                    android:backgroundTint="#EF4444"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="6dp"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.cardview.widget.CardView>

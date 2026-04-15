@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
     android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="@color/material_dynamic_neutral_variant60">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:text="Data/Hora"
             android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="#6B7280"
             android:textStyle="bold"/>
 
         <!-- Assunto -->
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="Assunto"
             android:textSize="16sp"
-            android:textColor="@android:color/black"
+            android:textColor="#1A1A2E"
             android:textStyle="bold"
             android:layout_marginTop="4dp"/>
 
@@ -45,14 +45,14 @@
             android:layout_height="wrap_content"
             android:text="Descrição"
             android:textSize="14sp"
-            android:textColor="@android:color/black"
-            android:layout_marginTop="2dp"/>
+            android:textColor="#374151"
+            android:layout_marginTop="4dp"/>
 
         <!-- Anexos -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:scrollbars="none">
 
             <LinearLayout
@@ -68,7 +68,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
-            android:background="@android:color/darker_gray"/>
+            android:background="#E5E7EB"/>
 
         <!-- Botões -->
         <LinearLayout
@@ -80,24 +80,32 @@
             <Button
                 android:id="@+id/btnEditar"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="4dp"
                 android:text="Editar"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
                 android:textAllCaps="false"
-                android:backgroundTint="@color/teal_700"
-                android:textColor="@android:color/white"/>
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"/>
 
             <Button
                 android:id="@+id/btnExcluir"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:layout_weight="1"
                 android:layout_marginStart="4dp"
                 android:text="Excluir"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
                 android:textAllCaps="false"
-                android:backgroundTint="@android:color/holo_red_dark"
-                android:textColor="@android:color/white"/>
+                android:backgroundTint="#EF4444"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"/>
 
         </LinearLayout>
 

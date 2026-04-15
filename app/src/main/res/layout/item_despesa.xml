@@ -3,15 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp">
 
         <!-- Data e Hora -->
         <TextView
@@ -19,8 +23,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="01/01/2025 12:00"
-            android:textSize="14sp"
-            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
             android:textStyle="bold" />
 
         <!-- Nome da despesa -->
@@ -30,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="Nome da Despesa"
             android:textSize="16sp"
-            android:textColor="@android:color/black"
+            android:textColor="#1A1A2E"
             android:layout_marginTop="4dp"
             android:textStyle="bold" />
 
@@ -41,8 +45,8 @@
             android:layout_height="wrap_content"
             android:text="Descrição da despesa"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="2dp"/>
+            android:textColor="#374151"
+            android:layout_marginTop="4dp"/>
 
         <!-- Valor -->
         <TextView
@@ -50,17 +54,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="R$ 0,00"
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_red_dark"
-            android:layout_marginTop="2dp"/>
+            android:textSize="16sp"
+            android:textColor="#EF4444"
+            android:layout_marginTop="4dp"
+            android:textStyle="bold"/>
 
         <!-- Botão Mostrar Anexos -->
         <Button
             android:id="@+id/btnMostrarAnexosDespesa"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:text="Mostrar Anexos"
-            android:layout_marginTop="6dp"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:textAllCaps="false"
+            android:backgroundTint="#6E747E"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="6dp"
+            android:layout_marginTop="8dp"
             android:visibility="gone"/>
 
         <!-- Layout para anexos -->
@@ -70,7 +82,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="8dp"/>
 
         <!-- Botões Editar e Excluir -->
         <LinearLayout
@@ -78,20 +90,34 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="end"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="12dp">
 
             <Button
                 android:id="@+id/btnEditarDespesa"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:text="Editar"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textAllCaps="false"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"
                 android:layout_marginEnd="8dp"/>
 
             <Button
                 android:id="@+id/btnExcluirDespesa"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Excluir"/>
+                android:layout_height="36dp"
+                android:text="Excluir"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textAllCaps="false"
+                android:backgroundTint="#EF4444"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"/>
         </LinearLayout>
 
     </LinearLayout>

@@ -6,13 +6,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F5F5F5">
+    android:background="#F0F2F8">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#F5F5F5"
+        android:background="#F0F2F8"
+        android:paddingBottom="16dp"
         tools:context=".DashBoardActivity">
 
         <!-- Título centralizado -->
@@ -23,235 +24,276 @@
             android:text="Administração"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="#0E0E0E"
+            android:textColor="#1A1A2E"
             android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="4dp"/>
 
         <!-- Botão Administradores -->
-        <Button
-            android:id="@+id/buttonAdministradores"
-            android:layout_width="0dp"
-            android:layout_height="42dp"
-            android:backgroundTint="#2196F3"
-            android:text="Administradores"
-            android:textSize="14sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="normal"
-            app:layout_constraintTop_toBottomOf="@id/textTitulo"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
 
         <!-- Registro de Assembleias -->
         <Button
+            android:id="@+id/buttonAdministradores"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="#6E747E"
+            android:elevation="2dp"
+            android:letterSpacing="0.03"
+            android:text="Administradores"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textTitulo" />
+
+        <Button
             android:id="@+id/buttonAssembleias"
             android:layout_width="0dp"
-            android:layout_height="42dp"
-            android:backgroundTint="#2196F3"
+            android:layout_height="44dp"
+            android:backgroundTint="#6E747E"
             android:text="Registro de Assembleias"
             android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonAdministradores"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Lista de Assembleias -->
         <Button
             android:id="@+id/buttonListaAssembleias"
             android:layout_width="0dp"
-            android:layout_height="42dp"
-            android:backgroundTint="#2196F3"
+            android:layout_height="44dp"
+            android:backgroundTint="#6E747E"
             android:text="Lista de Assembleias"
             android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonAssembleias"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Registro de Despesas -->
         <Button
             android:id="@+id/buttonDespesas"
             android:layout_width="0dp"
-            android:layout_height="42dp"
-            android:backgroundTint="#2196F3"
+            android:layout_height="44dp"
+            android:backgroundTint="#6E747E"
             android:text="Registro de Despesas"
             android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonListaAssembleias"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
-        <!-- Lista de Despesas -->
+        <!-- Lista de Despesas (Prestação de Contas) -->
         <Button
             android:id="@+id/buttonListaDespesas"
             android:layout_width="0dp"
-            android:layout_height="42dp"
-            android:backgroundTint="#2196F3"
+            android:layout_height="44dp"
+            android:backgroundTint="#6E747E"
             android:text="Prestação de Contas"
             android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonDespesas"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Avisos -->
         <Button
             android:id="@+id/buttonAvisos"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Cadastro de Avisos"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonListaDespesas"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Lista de Avisos -->
         <Button
             android:id="@+id/buttonListaAvisos"
             android:layout_width="0dp"
-            android:layout_height="42dp"
-            android:backgroundTint="#2196F3"
+            android:layout_height="44dp"
+            android:backgroundTint="#6E747E"
             android:text="Avisos"
             android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonAvisos"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Cadastro de Moradores -->
         <Button
             android:id="@+id/buttonCadastroMoradores"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Cadastro de Moradores"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonListaAvisos"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Lista de Moradores -->
         <Button
             android:id="@+id/buttonListaMoradores"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Lista de Moradores"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonCadastroMoradores"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Backup -->
         <Button
             android:id="@+id/buttonBackup"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Backup"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonListaMoradores"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Registro de Ocorrências -->
         <Button
             android:id="@+id/buttonRegistroOcorrencias"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Registro de Ocorrências"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonBackup"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Cadastro de Manutenção -->
         <Button
             android:id="@+id/buttonManutencao"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Cadastro de Manutenção"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonRegistroOcorrencias"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"/>
 
         <!-- Funcionários -->
         <Button
             android:id="@+id/buttonFuncionarios"
             android:layout_width="0dp"
-            android:layout_height="42dp"
+            android:layout_height="44dp"
             android:text="Cadastro de Funcionários"
             android:textSize="14sp"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="#6E747E"
             android:textColor="#FFFFFF"
-            android:textStyle="normal"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:elevation="2dp"
+            app:cornerRadius="8dp"
             app:layout_constraintTop_toBottomOf="@id/buttonManutencao"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="0dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

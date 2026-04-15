@@ -1,62 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp"
-    android:background="#FFFFFF"
-    android:elevation="2dp"
-    android:layout_marginBottom="8dp"
-    android:clipToPadding="false">
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <!-- Imagem do morador -->
-    <ImageView
-        android:id="@+id/imageMoradorItem"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center_horizontal"
-        android:src="@android:drawable/ic_menu_camera"
-        android:scaleType="centerCrop"
-        android:contentDescription="Imagem do morador"
-        android:background="@android:color/darker_gray"
-        android:layout_marginBottom="12dp"
-        android:clipToOutline="true"
-        android:cropToPadding="true"
-        android:outlineProvider="background"
-        android:padding="2dp" />
-
-    <!-- Dados do morador -->
-    <TextView
-        android:id="@+id/tvMoradorDados"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Dados do morador"
-        android:textSize="16sp"
-        android:padding="6dp"
-        android:textColor="#000000" />
-
-    <!-- Botões -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
-        android:gravity="center">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:clipToPadding="false">
 
-        <Button
-            android:id="@+id/btnEditarMorador"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Editar"
-            android:layout_marginEnd="4dp"/>
+        <!-- Imagem do morador -->
+        <ImageView
+            android:id="@+id/imageMoradorItem"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@android:drawable/ic_menu_camera"
+            android:scaleType="centerCrop"
+            android:contentDescription="Imagem do morador"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="12dp"
+            android:clipToOutline="true"
+            android:cropToPadding="true"
+            android:outlineProvider="background"
+            android:padding="2dp" />
 
-        <Button
-            android:id="@+id/btnExcluirMorador"
-            android:layout_width="0dp"
+        <!-- Dados do morador -->
+        <TextView
+            android:id="@+id/tvMoradorDados"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Excluir"
-            android:layout_marginStart="4dp"/>
+            android:text="Dados do morador"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="#374151" />
+
+        <!-- Botões -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnEditarMorador"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Editar"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textAllCaps="false"
+                android:backgroundTint="#3B82F6"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnExcluirMorador"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Excluir"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.03"
+                android:textAllCaps="false"
+                android:backgroundTint="#EF4444"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="6dp"/>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.cardview.widget.CardView>
