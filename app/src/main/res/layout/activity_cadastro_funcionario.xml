@@ -9,7 +9,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="24dp">
+        android:paddingBottom="24dp"
+        android:focusableInTouchMode="true"
+        android:descendantFocusability="beforeDescendants">
 
         <!-- Título -->
         <TextView
@@ -40,7 +42,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Campos pessoais e endereço -->
+        <!-- Nome -->
         <EditText
             android:id="@+id/editNomeFuncionario"
             android:layout_width="0dp"
@@ -48,15 +50,18 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="16dp"
-            android:hint="Nome"
+            android:hint="Nome *"
             android:background="@drawable/edittext_background"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="textPersonName"
+            android:nextFocusDown="@+id/editRuaFuncionario"
             app:layout_constraintTop_toBottomOf="@id/imageFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Rua -->
         <EditText
             android:id="@+id/editRuaFuncionario"
             android:layout_width="0dp"
@@ -69,10 +74,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="textPostalAddress"
+            android:nextFocusDown="@+id/editNumeroFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editNomeFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Número -->
         <EditText
             android:id="@+id/editNumeroFuncionario"
             android:layout_width="0dp"
@@ -80,16 +88,18 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="2dp"
-            android:hint="Nº"
+            android:hint="Número"
             android:background="@drawable/edittext_background"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="number"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editBairroFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editRuaFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Bairro -->
         <EditText
             android:id="@+id/editBairroFuncionario"
             android:layout_width="0dp"
@@ -102,10 +112,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editCepFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editNumeroFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- CEP -->
         <EditText
             android:id="@+id/editCepFuncionario"
             android:layout_width="0dp"
@@ -118,11 +131,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="number"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editCidadeFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editBairroFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Cidade -->
         <EditText
             android:id="@+id/editCidadeFuncionario"
             android:layout_width="0dp"
@@ -135,10 +150,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editEstadoFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editCepFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Estado -->
         <EditText
             android:id="@+id/editEstadoFuncionario"
             android:layout_width="0dp"
@@ -151,10 +169,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editPaisFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editCidadeFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- País -->
         <EditText
             android:id="@+id/editPaisFuncionario"
             android:layout_width="0dp"
@@ -167,10 +188,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editTelefoneFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editEstadoFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Telefone (SEM autofill e sem nextFocusDown) -->
         <EditText
             android:id="@+id/editTelefoneFuncionario"
             android:layout_width="0dp"
@@ -184,10 +208,12 @@
             android:paddingEnd="12dp"
             android:textSize="14sp"
             android:inputType="phone"
+            android:autofillHints=""
             app:layout_constraintTop_toBottomOf="@id/editPaisFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Email -->
         <EditText
             android:id="@+id/editEmailFuncionario"
             android:layout_width="0dp"
@@ -201,11 +227,12 @@
             android:paddingEnd="12dp"
             android:textSize="14sp"
             android:inputType="textEmailAddress"
+            android:nextFocusDown="@+id/editRGFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editTelefoneFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Campos profissionais -->
+        <!-- RG -->
         <EditText
             android:id="@+id/editRGFuncionario"
             android:layout_width="0dp"
@@ -218,11 +245,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="number"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editCPFFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editEmailFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- CPF -->
         <EditText
             android:id="@+id/editCPFFuncionario"
             android:layout_width="0dp"
@@ -235,11 +264,32 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="number"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editCargoFuncionario"
             app:layout_constraintTop_toBottomOf="@id/editRGFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Cargo -->
+        <EditText
+            android:id="@+id/editCargoFuncionario"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="2dp"
+            android:hint="Cargo"
+            android:background="@drawable/edittext_background"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textSize="14sp"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editCargaHoraria"
+            app:layout_constraintTop_toBottomOf="@id/editCPFFuncionario"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Carga Horária -->
         <EditText
             android:id="@+id/editCargaHoraria"
             android:layout_width="0dp"
@@ -252,11 +302,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="number"
-            app:layout_constraintTop_toBottomOf="@id/editCPFFuncionario"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editTurno"
+            app:layout_constraintTop_toBottomOf="@id/editCargoFuncionario"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Turno -->
         <EditText
             android:id="@+id/editTurno"
             android:layout_width="0dp"
@@ -269,10 +321,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editHoraEntrada"
             app:layout_constraintTop_toBottomOf="@id/editCargaHoraria"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Hora Entrada -->
         <EditText
             android:id="@+id/editHoraEntrada"
             android:layout_width="0dp"
@@ -285,11 +340,13 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="time"
+            android:inputType="text"
+            android:nextFocusDown="@+id/editHoraSaida"
             app:layout_constraintTop_toBottomOf="@id/editTurno"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Hora Saída -->
         <EditText
             android:id="@+id/editHoraSaida"
             android:layout_width="0dp"
@@ -302,7 +359,7 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:textSize="14sp"
-            android:inputType="time"
+            android:inputType="text"
             app:layout_constraintTop_toBottomOf="@id/editHoraEntrada"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

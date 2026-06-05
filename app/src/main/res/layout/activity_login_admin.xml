@@ -41,10 +41,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Login"
-                android:textSize="14sp"
+                android:text="Entrar"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="12dp"
                 android:textColor="#1A1A2E"/>
 
             <EditText
@@ -65,7 +65,7 @@
                 android:id="@+id/editLoginSenha"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Senha"
+                android:hint="Senha (6 dígitos)"
                 android:inputType="numberPassword"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -78,7 +78,7 @@
             <Button
                 android:id="@+id/btnEntrar"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:text="Entrar"
                 android:layout_marginBottom="24dp"
                 android:backgroundTint="#6E747E"
@@ -99,18 +99,25 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:gravity="center"
-                android:text="Cadastrar-se"
-                android:textSize="18sp"
+                android:text="Cadastrar Novo Administrador"
+                android:textSize="16sp"
                 android:textStyle="bold"
+                android:layout_marginBottom="12dp"
                 android:textColor="#1A1A2E" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="(Necessário senha master)"
+                android:textSize="12sp"
+                android:layout_marginBottom="12dp"
+                android:textColor="#9CA3AF" />
 
             <EditText
                 android:id="@+id/editCadastroAdmin"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Usuário"
+                android:hint="Novo usuário"
                 android:inputType="textPersonName"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -124,7 +131,7 @@
                 android:id="@+id/editCadastroSenha"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Senha (6 dígitos)"
+                android:hint="Nova senha (6 dígitos numéricos)"
                 android:inputType="numberPassword"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -137,7 +144,7 @@
             <Button
                 android:id="@+id/btnCadastrar"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:text="Cadastrar"
                 android:backgroundTint="#6E747E"
                 android:textColor="#FFFFFF"

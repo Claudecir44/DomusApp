@@ -2,31 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissões CORRIGIDAS -->
+    <!-- Permissões -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
-    <!-- Biometria - Atualizado para API moderna -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-
-    <!-- Armazenamento - Adaptado para Android 10+ -->
-    <!-- Para Android 10+ (API 29+), use scoped storage -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <!-- Para Android 13+ (API 33+), use as novas permissões -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-
-    <!-- Permissão para notificações (se usar no futuro) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"
         tools:ignore="UnusedAttribute" />
-
-    <!-- Permissão para trabalho em background -->
     <uses-permission android:name="android.permission.WAKE_LOCK"
         tools:ignore="UnusedAttribute" />
-
-    <!-- Permissão para acesso a câmera (se necessário no futuro) -->
     <uses-permission android:name="android.permission.CAMERA"
         tools:ignore="UnusedAttribute" />
 
@@ -55,22 +43,29 @@
             </intent-filter>
         </activity>
 
-        <!-- Activities de Login -->
-        <activity android:name=".LoginMoradorActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".LoginMasterActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".LoginAdminActivity"
+        <!-- Activities de Login (ATUALIZADAS para os novos pacotes) -->
+        <activity
+            android:name=".presentation.loginmorador.LoginMoradorActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Activities de Administração -->
+        <activity
+            android:name=".presentation.loginmaster.LoginMasterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".presentation.loginadmin.LoginAdminActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Activities de Administração (ATUALIZADAS) -->
         <activity android:name=".AdministradoresActivity" android:exported="false" />
-        <activity android:name=".DashBoardActivity" android:exported="false" />
+        <activity
+            android:name=".presentation.dashboard.DashBoardActivity"
+            android:exported="false" />
 
-        <!-- Activities de Gestão de Conteúdo -->
+        <!-- Activities de Gestão de Conteúdo (manter como estão) -->
         <activity android:name=".ListaAvisosActivity" android:exported="false" />
         <activity android:name=".CadastroAvisosActivity"
             android:exported="false"
@@ -114,14 +109,14 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
-        <!-- Service para sincronização em background (opcional) -->
+        <!-- Service para sincronização -->
         <service
             android:name=".sync.SyncService"
             android:enabled="true"
             android:exported="false"
             tools:ignore="ExportedService" />
 
-        <!-- Provider para anexos via FileProvider - CORRIGIDO -->
+        <!-- Provider para anexos via FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -131,13 +126,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <!-- WorkManager para sincronização -->
-        <provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
-            android:authorities="${applicationId}.workmanager-init"
-            android:exported="false"
-            tools:node="remove" />
 
     </application>
 

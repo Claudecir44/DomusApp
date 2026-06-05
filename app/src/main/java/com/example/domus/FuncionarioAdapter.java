@@ -1,116 +1,255 @@
 package com.example.domus;
 
+import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.domus.domain.model.Funcionario;
+
 import java.util.List;
 
-public class FuncionarioAdapter extends RecyclerView.Adapter<FuncionarioAdapter.FuncionarioViewHolder> {
+public class FuncionarioAdapter extends RecyclerView.Adapter<FuncionarioAdapter.ViewHolder> {
 
-    private List<Funcionario> listaFuncionarios;
+    private List<Funcionario> lista;
+    private Context context;
     private OnItemClickListener listener;
 
-    // Interface para ações de clique
     public interface OnItemClickListener {
         void onEditar(Funcionario funcionario, int position);
         void onExcluir(Funcionario funcionario, int position);
-        void onItemClick(Funcionario funcionario);
     }
 
-    // Construtor
-    public FuncionarioAdapter(List<Funcionario> lista, OnItemClickListener listener){
-        this.listaFuncionarios = lista;
+    public FuncionarioAdapter(List<Funcionario> lista, OnItemClickListener listener) {
+        this.lista = lista;
         this.listener = listener;
     }
 
     @NonNull
     @Override
-    public FuncionarioViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_funcionario, parent, false);
-        return new FuncionarioViewHolder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        context = parent.getContext();
+        View view = LayoutInflater.from(context).inflate(R.layout.item_funcionario, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull FuncionarioViewHolder holder, int position) {
-        Funcionario f = listaFuncionarios.get(position);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Funcionario f = lista.get(position);
 
-        // Monta o texto completo com todos os campos preenchidos
-        StringBuilder dados = new StringBuilder();
-        if (f.getNome() != null && !f.getNome().isEmpty()) dados.append("Nome: ").append(f.getNome()).append("\n");
-        if (f.getCpf() != null && !f.getCpf().isEmpty()) dados.append("CPF: ").append(f.getCpf()).append("\n");
-        if (f.getRg() != null && !f.getRg().isEmpty()) dados.append("RG: ").append(f.getRg()).append("\n");
-        if (f.getRua() != null && !f.getRua().isEmpty()) dados.append("Endereço: ").append(f.getRua());
-        if (f.getNumero() != null && !f.getNumero().isEmpty()) dados.append(", ").append(f.getNumero());
-        if (f.getBairro() != null && !f.getBairro().isEmpty()) dados.append(", ").append(f.getBairro());
-        if (f.getCidade() != null && !f.getCidade().isEmpty()) dados.append(", ").append(f.getCidade());
-        if (f.getEstado() != null && !f.getEstado().isEmpty()) dados.append(", ").append(f.getEstado());
-        if (f.getPais() != null && !f.getPais().isEmpty()) dados.append(", ").append(f.getPais()).append("\n");
-        if (f.getCep() != null && !f.getCep().isEmpty()) dados.append("CEP: ").append(f.getCep()).append("\n");
-        if (f.getTelefone() != null && !f.getTelefone().isEmpty()) dados.append("Telefone: ").append(f.getTelefone()).append("\n");
-        if (f.getEmail() != null && !f.getEmail().isEmpty()) dados.append("Email: ").append(f.getEmail()).append("\n");
-        if (f.getCargaHoraria() != null && !f.getCargaHoraria().isEmpty()) dados.append("Carga Horária: ").append(f.getCargaHoraria()).append("\n");
-        if (f.getTurno() != null && !f.getTurno().isEmpty()) dados.append("Turno: ").append(f.getTurno()).append("\n");
-        if (f.getHoraEntrada() != null && !f.getHoraEntrada().isEmpty()) dados.append("Entrada: ").append(f.getHoraEntrada()).append("\n");
-        if (f.getHoraSaida() != null && !f.getHoraSaida().isEmpty()) dados.append("Saída: ").append(f.getHoraSaida());
+        // ===== NOME =====
+        holder.tvNomeFuncionario.setText(f.getNome() != null && !f.getNome().isEmpty() ? f.getNome() : "Nome não informado");
 
-        holder.tvDados.setText(dados.toString());
+        // ===== CARGO =====
+        if (f.getCargo() != null && !f.getCargo().isEmpty()) {
+            holder.tvCargoFuncionario.setText("📌 Cargo: " + f.getCargo());
+            holder.tvCargoFuncionario.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvCargoFuncionario.setVisibility(View.GONE);
+        }
 
-        // Exibe a imagem, ou ícone padrão
-        Uri img = f.getImagemUri();
-        if (img != null) holder.ivFoto.setImageURI(img);
-        else holder.ivFoto.setImageResource(android.R.drawable.ic_menu_camera);
+        // ===== TELEFONE =====
+        if (f.getTelefone() != null && !f.getTelefone().isEmpty()) {
+            holder.tvTelefoneFuncionario.setText("📞 Telefone: " + f.getTelefone());
+            holder.tvTelefoneFuncionario.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvTelefoneFuncionario.setText("📞 Telefone: Não informado");
+            holder.tvTelefoneFuncionario.setVisibility(View.VISIBLE);
+        }
 
-        // Clique no item
-        holder.itemView.setOnClickListener(v -> {
-            if(listener != null) listener.onItemClick(f);
+        // ===== ENDEREÇO COMPLETO =====
+        StringBuilder endereco = new StringBuilder();
+        boolean temEndereco = false;
+
+        if (f.getRua() != null && !f.getRua().isEmpty()) {
+            endereco.append(f.getRua());
+            temEndereco = true;
+        }
+        if (f.getNumero() != null && !f.getNumero().isEmpty()) {
+            if (temEndereco) endereco.append(", ");
+            endereco.append(f.getNumero());
+            temEndereco = true;
+        }
+        if (f.getBairro() != null && !f.getBairro().isEmpty()) {
+            if (temEndereco) endereco.append(" - ");
+            endereco.append(f.getBairro());
+            temEndereco = true;
+        }
+        if (f.getCidade() != null && !f.getCidade().isEmpty()) {
+            if (temEndereco) endereco.append("\n📍 ");
+            endereco.append(f.getCidade());
+            temEndereco = true;
+        }
+        if (f.getEstado() != null && !f.getEstado().isEmpty()) {
+            if (temEndereco && !endereco.toString().contains(f.getCidade())) endereco.append(" - ");
+            endereco.append(f.getEstado());
+            temEndereco = true;
+        }
+        if (f.getCep() != null && !f.getCep().isEmpty()) {
+            if (temEndereco) endereco.append(", CEP: ");
+            endereco.append(f.getCep());
+            temEndereco = true;
+        }
+
+        if (temEndereco) {
+            holder.tvEnderecoCompleto.setText("📍 Endereço: " + endereco.toString());
+            holder.tvEnderecoCompleto.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvEnderecoCompleto.setVisibility(View.GONE);
+        }
+
+        // ===== RG e CPF =====
+        boolean temRg = (f.getRg() != null && !f.getRg().isEmpty());
+        boolean temCpf = (f.getCpf() != null && !f.getCpf().isEmpty());
+
+        if (temRg || temCpf) {
+            if (temRg) {
+                holder.tvRGFuncionario.setText("📄 RG: " + f.getRg());
+                holder.tvRGFuncionario.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvRGFuncionario.setVisibility(View.GONE);
+            }
+
+            if (temCpf) {
+                holder.tvCPFFuncionario.setText("📄 CPF: " + f.getCpf());
+                holder.tvCPFFuncionario.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvCPFFuncionario.setVisibility(View.GONE);
+            }
+            holder.layoutDocumentos.setVisibility(View.VISIBLE);
+        } else {
+            holder.layoutDocumentos.setVisibility(View.GONE);
+        }
+
+        // ===== CARGA HORÁRIA =====
+        if (f.getCargaHoraria() != null && !f.getCargaHoraria().isEmpty()) {
+            holder.tvCargaHoraria.setText("⏱️ Carga Horária: " + f.getCargaHoraria() + "h");
+            holder.tvCargaHoraria.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvCargaHoraria.setVisibility(View.GONE);
+        }
+
+        // ===== TURNO =====
+        if (f.getTurno() != null && !f.getTurno().isEmpty()) {
+            holder.tvTurno.setText("🔄 Turno: " + f.getTurno());
+            holder.tvTurno.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvTurno.setVisibility(View.GONE);
+        }
+
+        // ===== HORÁRIO DE TRABALHO =====
+        StringBuilder horario = new StringBuilder();
+        boolean temHorario = false;
+
+        if (f.getHoraEntrada() != null && !f.getHoraEntrada().isEmpty()) {
+            horario.append(f.getHoraEntrada());
+            temHorario = true;
+        }
+        if (f.getHoraSaida() != null && !f.getHoraSaida().isEmpty()) {
+            if (temHorario) horario.append(" às ");
+            horario.append(f.getHoraSaida());
+            temHorario = true;
+        }
+
+        if (temHorario) {
+            holder.tvHorarioTrabalho.setText("⏰ Horário: " + horario.toString());
+            holder.tvHorarioTrabalho.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvHorarioTrabalho.setVisibility(View.GONE);
+        }
+
+        // ===== EMAIL =====
+        if (f.getEmail() != null && !f.getEmail().isEmpty()) {
+            holder.tvEmail.setText("📧 Email: " + f.getEmail());
+            holder.tvEmail.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvEmail.setVisibility(View.GONE);
+        }
+
+        // ===== FOTO =====
+        if (f.getImagemUri() != null && !f.getImagemUri().isEmpty()) {
+            try {
+                Uri uri = Uri.parse(f.getImagemUri());
+                holder.imgFotoFuncionario.setImageURI(uri);
+            } catch (Exception e) {
+                holder.imgFotoFuncionario.setImageResource(android.R.drawable.ic_menu_camera);
+            }
+        } else {
+            holder.imgFotoFuncionario.setImageResource(android.R.drawable.ic_menu_camera);
+        }
+
+        // ===== BOTÕES =====
+        holder.btnEditarFuncionario.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onEditar(f, position);
+            }
         });
 
-        // Clique no botão Editar
-        holder.btnEditar.setOnClickListener(v -> {
-            if(listener != null) listener.onEditar(f, position);
-        });
-
-        // Clique no botão Excluir (somente chama listener, confirmação fica na activity)
-        holder.btnExcluir.setOnClickListener(v -> {
-            if(listener != null) listener.onExcluir(f, position);
+        holder.btnExcluirFuncionario.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onExcluir(f, position);
+            }
         });
     }
 
     @Override
     public int getItemCount() {
-        return listaFuncionarios.size();
+        return lista != null ? lista.size() : 0;
     }
 
-    // Remove item da lista (chamar apenas se confirmado na activity)
-    public void removerItem(int position){
-        listaFuncionarios.remove(position);
-        notifyItemRemoved(position);
+    public void atualizarLista(List<Funcionario> novaLista) {
+        this.lista = novaLista;
+        notifyDataSetChanged();
     }
 
-    public OnItemClickListener getListener() {
-        return listener;
+    public void removerItem(int position) {
+        if (lista != null && position >= 0 && position < lista.size()) {
+            lista.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, lista.size() - position);
+        }
     }
 
-    static class FuncionarioViewHolder extends RecyclerView.ViewHolder{
-        ImageView ivFoto;
-        TextView tvDados;
-        Button btnEditar, btnExcluir;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView imgFotoFuncionario;
+        TextView tvNomeFuncionario;
+        TextView tvCargoFuncionario;
+        TextView tvTelefoneFuncionario;
+        TextView tvEnderecoCompleto;
+        LinearLayout layoutDocumentos;
+        TextView tvRGFuncionario;
+        TextView tvCPFFuncionario;
+        TextView tvCargaHoraria;
+        TextView tvTurno;
+        TextView tvHorarioTrabalho;
+        TextView tvEmail;
+        Button btnEditarFuncionario;
+        Button btnExcluirFuncionario;
 
-        public FuncionarioViewHolder(@NonNull View itemView){
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivFoto = itemView.findViewById(R.id.ivFuncionarioFoto);
-            tvDados = itemView.findViewById(R.id.tvFuncionarioDados);
-            btnEditar = itemView.findViewById(R.id.btnEditarFuncionario);
-            btnExcluir = itemView.findViewById(R.id.btnExcluirFuncionario);
+            imgFotoFuncionario = itemView.findViewById(R.id.imgFotoFuncionario);
+            tvNomeFuncionario = itemView.findViewById(R.id.tvNomeFuncionario);
+            tvCargoFuncionario = itemView.findViewById(R.id.tvCargoFuncionario);
+            tvTelefoneFuncionario = itemView.findViewById(R.id.tvTelefoneFuncionario);
+            tvEnderecoCompleto = itemView.findViewById(R.id.tvEnderecoCompleto);
+            layoutDocumentos = itemView.findViewById(R.id.layoutDocumentos);
+            tvRGFuncionario = itemView.findViewById(R.id.tvRGFuncionario);
+            tvCPFFuncionario = itemView.findViewById(R.id.tvCPFFuncionario);
+            tvCargaHoraria = itemView.findViewById(R.id.tvCargaHoraria);
+            tvTurno = itemView.findViewById(R.id.tvTurno);
+            tvHorarioTrabalho = itemView.findViewById(R.id.tvHorarioTrabalho);
+            tvEmail = itemView.findViewById(R.id.tvEmail);
+            btnEditarFuncionario = itemView.findViewById(R.id.btnEditarFuncionario);
+            btnExcluirFuncionario = itemView.findViewById(R.id.btnExcluirFuncionario);
         }
     }
 }

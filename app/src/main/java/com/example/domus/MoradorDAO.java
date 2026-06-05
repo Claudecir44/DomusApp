@@ -1,10 +1,12 @@
 package com.example.domus;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -12,240 +14,291 @@ import java.util.List;
 
 public class MoradorDAO {
 
-    private static final String PREFS_NAME = "moradores";
-    private static final String KEY_LISTA = "lista";
-
-    private Context context;
+    private static final String TAG = "MoradorDAO";
+    private BDCondominioHelper dbHelper;
 
     public MoradorDAO(Context context) {
-        this.context = context;
+        dbHelper = new BDCondominioHelper(context);
     }
 
-    // ----------------------------
-    // MÉTODO ESTÁTICO
-    // ----------------------------
-    public static JSONArray getListaMoradores(Context context) {
+    /**
+     * Valida login do morador usando primeiro nome (usuario) e CPF (senha)
+     * @param primeiroNome Primeiro nome do morador
+     * @param cpf CPF do morador (usado como senha)
+     * @return JSONObject com os dados do morador ou null
+     */
+    public JSONObject validarLoginMorador(String primeiroNome, String cpf) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        JSONObject result = null;
+
         try {
-            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            String json = prefs.getString(KEY_LISTA, "[]");
-            return new JSONArray(json);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new JSONArray();
-        }
-    }
+            // Busca pelo primeiro nome (usuario) e CPF (senha)
+            String query = "SELECT * FROM " + BDCondominioHelper.TABELA_MORADORES +
+                    " WHERE " + BDCondominioHelper.COL_USUARIO + " = ? AND " +
+                    BDCondominioHelper.COL_SENHA + " = ?";
+            cursor = db.rawQuery(query, new String[]{primeiroNome, cpf});
 
-    // ----------------------------
-    // MÉTODO DE INSTÂNCIA (para uso interno)
-    // ----------------------------
-    public JSONArray getListaMoradores() {
-        return getListaMoradores(context);
-    }
-
-    // ----------------------------
-    // MÉTODOS DE INSTÂNCIA (CRUD)
-    // ----------------------------
-    public List<JSONObject> listarMoradoresJSON() {
-        List<JSONObject> lista = new ArrayList<>();
-        try {
-            JSONArray jsonArray = getListaMoradores();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                lista.add(jsonArray.getJSONObject(i));
+            if (cursor != null && cursor.moveToFirst()) {
+                result = new JSONObject();
+                String[] columnNames = cursor.getColumnNames();
+                for (int i = 0; i < columnNames.length; i++) {
+                    String value = cursor.getString(i);
+                    result.put(columnNames[i], value != null ? value : "");
+                }
+                Log.d(TAG, "✅ Login válido para: " + primeiroNome);
+            } else {
+                Log.d(TAG, "❌ Login inválido para: " + primeiroNome);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Erro ao validar login: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
+
+        return result;
+    }
+
+    /**
+     * Retorna lista de moradores em JSONArray
+     */
+    public JSONArray getListaMoradores() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        JSONArray lista = new JSONArray();
+
+        try {
+            cursor = db.query(BDCondominioHelper.TABELA_MORADORES,
+                    null, null, null, null, null,
+                    BDCondominioHelper.COL_NOME + " ASC");
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    JSONObject morador = new JSONObject();
+                    String[] columnNames = cursor.getColumnNames();
+                    for (int i = 0; i < columnNames.length; i++) {
+                        String value = cursor.getString(i);
+                        morador.put(columnNames[i], value != null ? value : "");
+                    }
+                    lista.put(morador);
+                } while (cursor.moveToNext());
+            }
+            Log.d(TAG, "📋 Lista de moradores carregada: " + lista.length() + " registros");
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Erro ao listar moradores: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
+        }
+
         return lista;
     }
 
+    /**
+     * Extrai o primeiro nome do nome completo
+     */
+    private String getPrimeiroNome(String nomeCompleto) {
+        if (nomeCompleto == null || nomeCompleto.isEmpty()) return "";
+        String[] partes = nomeCompleto.trim().split(" ");
+        return partes[0];
+    }
+
+    /**
+     * Insere um novo morador com todos os campos
+     * Define automaticamente usuario = primeiro nome e senha = cpf
+     */
+    public boolean inserirMoradorCompleto(String cod, String nome, String cpf, String email,
+                                          String rua, String numero, String telefone,
+                                          String quadra, String lote, String imagePath) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(BDCondominioHelper.COL_COD, cod);
+        values.put(BDCondominioHelper.COL_NOME, nome);
+        values.put(BDCondominioHelper.COL_CPF, cpf);
+        values.put(BDCondominioHelper.COL_EMAIL, email);
+        values.put(BDCondominioHelper.COL_RUA, rua);
+        values.put(BDCondominioHelper.COL_NUMERO, numero);
+        values.put(BDCondominioHelper.COL_TELEFONE, telefone);
+        values.put(BDCondominioHelper.COL_QUADRA, quadra);
+        values.put(BDCondominioHelper.COL_LOTE, lote);
+        values.put(BDCondominioHelper.COL_IMAGEM_URI, imagePath);
+
+        // Define usuario = primeiro nome e senha = cpf (sem formatação)
+        String primeiroNome = getPrimeiroNome(nome);
+        String cpfLimpo = cpf.replaceAll("[^0-9]", ""); // Remove pontos e traços do CPF
+
+        values.put(BDCondominioHelper.COL_USUARIO, primeiroNome.toLowerCase());
+        values.put(BDCondominioHelper.COL_SENHA, cpfLimpo);
+
+        long resultado = db.insert(BDCondominioHelper.TABELA_MORADORES, null, values);
+        db.close();
+
+        Log.d(TAG, resultado != -1 ? "✅ Morador inserido: " + nome + " (login: " + primeiroNome + ", senha: " + cpfLimpo + ")" : "❌ Erro ao inserir morador");
+        return resultado != -1;
+    }
+
+    /**
+     * Atualiza um morador existente com todos os campos
+     */
+    public boolean atualizarMoradorCompleto(String cod, String nome, String cpf, String email,
+                                            String rua, String numero, String telefone,
+                                            String quadra, String lote, String imagePath) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(BDCondominioHelper.COL_NOME, nome);
+        values.put(BDCondominioHelper.COL_CPF, cpf);
+        values.put(BDCondominioHelper.COL_EMAIL, email);
+        values.put(BDCondominioHelper.COL_RUA, rua);
+        values.put(BDCondominioHelper.COL_NUMERO, numero);
+        values.put(BDCondominioHelper.COL_TELEFONE, telefone);
+        values.put(BDCondominioHelper.COL_QUADRA, quadra);
+        values.put(BDCondominioHelper.COL_LOTE, lote);
+        values.put(BDCondominioHelper.COL_IMAGEM_URI, imagePath);
+
+        // Atualiza também usuario = primeiro nome e senha = cpf
+        String primeiroNome = getPrimeiroNome(nome);
+        String cpfLimpo = cpf.replaceAll("[^0-9]", "");
+
+        values.put(BDCondominioHelper.COL_USUARIO, primeiroNome.toLowerCase());
+        values.put(BDCondominioHelper.COL_SENHA, cpfLimpo);
+
+        int rows = db.update(BDCondominioHelper.TABELA_MORADORES, values,
+                BDCondominioHelper.COL_COD + " = ?",
+                new String[]{cod});
+        db.close();
+
+        Log.d(TAG, rows > 0 ? "✅ Morador atualizado: " + nome : "❌ Erro ao atualizar morador");
+        return rows > 0;
+    }
+
+    /**
+     * Insere morador a partir de JSON
+     */
     public boolean inserirMorador(JSONObject morador) {
-        try {
-            JSONArray moradores = getListaMoradores();
-            moradores.put(morador);
-            salvarLista(moradores);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        String cod = morador.optString("cod");
+        String nome = morador.optString("nome");
+        String cpf = morador.optString("cpf");
+        String email = morador.optString("email");
+        String rua = morador.optString("rua");
+        String numero = morador.optString("numero");
+        String telefone = morador.optString("telefone");
+        String quadra = morador.optString("quadra");
+        String lote = morador.optString("lote");
+        String imagePath = morador.optString("foto");
+
+        return inserirMoradorCompleto(cod, nome, cpf, email, rua, numero, telefone, quadra, lote, imagePath);
     }
 
-    public boolean atualizarMorador(String codigo, JSONObject moradorAtualizado) {
-        try {
-            JSONArray moradores = getListaMoradores();
-            for (int i = 0; i < moradores.length(); i++) {
-                JSONObject m = moradores.getJSONObject(i);
-                if (m.optString("cod").equals(codigo)) {
-                    moradores.put(i, moradorAtualizado);
-                    salvarLista(moradores);
-                    return true;
-                }
-            }
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+    /**
+     * Atualiza morador a partir de JSON
+     */
+    public boolean atualizarMorador(String cod, JSONObject morador) {
+        String nome = morador.optString("nome");
+        String cpf = morador.optString("cpf");
+        String email = morador.optString("email");
+        String rua = morador.optString("rua");
+        String numero = morador.optString("numero");
+        String telefone = morador.optString("telefone");
+        String quadra = morador.optString("quadra");
+        String lote = morador.optString("lote");
+        String imagePath = morador.optString("foto");
+
+        return atualizarMoradorCompleto(cod, nome, cpf, email, rua, numero, telefone, quadra, lote, imagePath);
     }
 
-    // Método original mantido para compatibilidade
-    public void atualizarMorador(int index, JSONObject moradorAtualizado) {
+    /**
+     * Busca morador por código
+     */
+    public JSONObject getMoradorPorCod(String cod) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        JSONObject result = null;
+
         try {
-            JSONArray moradores = getListaMoradores();
-            moradores.put(index, moradorAtualizado);
-            salvarLista(moradores);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+            cursor = db.query(BDCondominioHelper.TABELA_MORADORES,
+                    null,
+                    BDCondominioHelper.COL_COD + " = ?",
+                    new String[]{cod},
+                    null, null, null);
 
-    public boolean excluirMorador(int index) {
-        try {
-            JSONArray moradores = getListaMoradores();
-            JSONArray novaLista = new JSONArray();
-            for (int i = 0; i < moradores.length(); i++) {
-                if (i != index) {
-                    novaLista.put(moradores.getJSONObject(i));
-                }
-            }
-            salvarLista(novaLista);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // ----------------------------
-    // Excluir morador pelo código
-    // ----------------------------
-    public boolean excluirMoradorPorCodigo(String cod) {
-        try {
-            JSONArray moradores = getListaMoradores();
-            JSONArray novaLista = new JSONArray();
-            boolean encontrado = false;
-
-            for (int i = 0; i < moradores.length(); i++) {
-                JSONObject m = moradores.getJSONObject(i);
-                if (!m.optString("cod").equals(cod)) {
-                    novaLista.put(m);
-                } else {
-                    encontrado = true;
-                    // Excluir a imagem associada se existir
-                    String imagePath = m.optString("foto", "");
-                    if (!imagePath.isEmpty()) {
-                        BackupUtil.deleteImageFile(imagePath);
-                    }
-                }
-            }
-
-            if (encontrado) {
-                salvarLista(novaLista);
-                return true;
-            }
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // ----------------------------
-    // VALIDAR LOGIN DO MORADOR (MÉTODO CORRIGIDO)
-    // ----------------------------
-    public JSONObject validarLoginMorador(String usuario, String senha) {
-        try {
-            JSONArray moradores = getListaMoradores();
-            for (int i = 0; i < moradores.length(); i++) {
-                JSONObject m = moradores.getJSONObject(i);
-
-                // Verifica se o primeiro nome corresponde (case insensitive)
-                String nomeCompleto = m.optString("nome", "");
-                String primeiroNome = extrairPrimeiroNome(nomeCompleto);
-
-                // Verifica se o CPF corresponde à senha
-                String cpf = m.optString("cpf", "");
-
-                if (primeiroNome.equalsIgnoreCase(usuario) && cpf.equals(senha)) {
-                    return m;
+            if (cursor != null && cursor.moveToFirst()) {
+                result = new JSONObject();
+                String[] columnNames = cursor.getColumnNames();
+                for (int i = 0; i < columnNames.length; i++) {
+                    String value = cursor.getString(i);
+                    result.put(columnNames[i], value != null ? value : "");
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "❌ Erro ao buscar morador: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
-        return null;
+
+        return result;
     }
 
-    // Método auxiliar para extrair o primeiro nome
-    private String extrairPrimeiroNome(String nomeCompleto) {
-        if (nomeCompleto == null || nomeCompleto.isEmpty()) {
-            return "";
-        }
-        String[] partes = nomeCompleto.split(" ");
-        return partes[0].trim();
+    /**
+     * Remove um morador
+     */
+    public boolean removerMorador(String cod) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rows = db.delete(BDCondominioHelper.TABELA_MORADORES,
+                BDCondominioHelper.COL_COD + " = ?",
+                new String[]{cod});
+        db.close();
+        Log.d(TAG, rows > 0 ? "🗑️ Morador removido: " + cod : "❌ Erro ao remover morador");
+        return rows > 0;
     }
 
-    // ----------------------------
-    // Buscar morador por código
-    // ----------------------------
-    public JSONObject buscarPorCodigo(String codigo) {
+    /**
+     * Conta quantos moradores existem
+     */
+    public int contarMoradores() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        int count = 0;
+
         try {
-            JSONArray moradores = getListaMoradores();
-            for (int i = 0; i < moradores.length(); i++) {
-                JSONObject m = moradores.getJSONObject(i);
-                if (m.optString("cod").equals(codigo)) {
-                    return m;
-                }
+            cursor = db.rawQuery("SELECT COUNT(*) FROM " + BDCondominioHelper.TABELA_MORADORES, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                count = cursor.getInt(0);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "❌ Erro ao contar moradores: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
-        return null;
+
+        return count;
     }
 
-    // ----------------------------
-    // Buscar morador por CPF
-    // ----------------------------
-    public JSONObject buscarPorCPF(String cpf) {
+    /**
+     * Verifica se já existe morador com o mesmo código ou CPF
+     */
+    public boolean existeMorador(String cod, String cpf) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = null;
+        boolean existe = false;
+
         try {
-            JSONArray moradores = getListaMoradores();
-            for (int i = 0; i < moradores.length(); i++) {
-                JSONObject m = moradores.getJSONObject(i);
-                if (m.optString("cpf").equals(cpf)) {
-                    return m;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+            cursor = db.query(BDCondominioHelper.TABELA_MORADORES,
+                    new String[]{BDCondominioHelper.COL_ID},
+                    BDCondominioHelper.COL_COD + " = ? OR " + BDCondominioHelper.COL_CPF + " = ?",
+                    new String[]{cod, cpf},
+                    null, null, null);
 
-    // ----------------------------
-    // Verificar se CPF já existe
-    // ----------------------------
-    public boolean cpfExiste(String cpf) {
-        try {
-            JSONArray moradores = getListaMoradores();
-            for (int i = 0; i < moradores.length(); i++) {
-                JSONObject m = moradores.getJSONObject(i);
-                if (m.optString("cpf").equals(cpf)) {
-                    return true;
-                }
-            }
+            existe = cursor != null && cursor.getCount() > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "❌ Erro ao verificar existência: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
-        return false;
-    }
 
-    // ----------------------------
-    // SALVAR LISTA
-    // ----------------------------
-    private void salvarLista(JSONArray lista) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(KEY_LISTA, lista.toString());
-        editor.apply();
+        return existe;
     }
 }

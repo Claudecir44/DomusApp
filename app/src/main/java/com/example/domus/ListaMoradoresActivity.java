@@ -9,8 +9,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListaMoradoresActivity extends AppCompatActivity {
@@ -34,7 +36,17 @@ public class ListaMoradoresActivity extends AppCompatActivity {
     }
 
     private void carregarLista() {
-        moradores = moradorDAO.listarMoradoresJSON();
+        // CORRIGIDO: Usar getListaMoradores() em vez de listarMoradoresJSON()
+        JSONArray jsonArray = moradorDAO.getListaMoradores();
+        moradores = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                moradores.add(jsonArray.getJSONObject(i));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (adapter == null) {
             adapter = new MoradorAdapter(this, moradores, new MoradorAdapter.OnItemClickListener() {
@@ -62,7 +74,8 @@ public class ListaMoradoresActivity extends AppCompatActivity {
                 .setMessage("Deseja excluir " + morador.optString("nome") + "?")
                 .setPositiveButton("Sim", (dialog, which) -> {
                     String codigo = morador.optString("cod");
-                    boolean sucesso = moradorDAO.excluirMoradorPorCodigo(codigo);
+                    // CORRIGIDO: Usar removerMorador() em vez de excluirMoradorPorCodigo()
+                    boolean sucesso = moradorDAO.removerMorador(codigo);
 
                     if (sucesso) {
                         adapter.removerItemPorCodigo(codigo);

@@ -1,50 +1,30 @@
-package com.example.domus;
+package com.example.domus.presentation.loginadmin;
 
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import androidx.lifecycle.ViewModelProvider;
+import com.example.domus.R;
+import com.example.domus.presentation.dashboard.DashBoardActivity;
 
 public class LoginAdminActivity extends AppCompatActivity {
 
+    private com.example.domus.presentation.loginadmin.LoginAdminViewModel viewModel;
     private EditText editLoginAdmin, editLoginSenha, editCadastroAdmin, editCadastroSenha;
     private Button btnEntrar, btnCadastrar;
-    private BDCondominioHelper dbHelper;
-
-    private static final String PREFS_NAME = "admin_prefs";
-    private static final String KEY_ADMIN_LOGADO = "admin_logado";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHelper = new BDCondominioHelper(this);
+        setContentView(R.layout.activity_login_admin);
 
-        // Verifica se existe algum administrador cadastrado
-        if (!existeAdministrador()) {
-            // Nenhum admin → abrir cadastro inicial
-            setContentView(R.layout.activity_login_admin); // ou layout de cadastro inicial se tiver
-            Toast.makeText(this, "Nenhum administrador cadastrado. Cadastre o primeiro.", Toast.LENGTH_LONG).show();
-        } else {
-            // Já existe admin → abrir login normal
-            setContentView(R.layout.activity_login_admin);
-        }
-
-        // Inicializa campos e botões
+        // Inicializa views
         editLoginAdmin = findViewById(R.id.editLoginAdmin);
         editLoginSenha = findViewById(R.id.editLoginSenha);
         editCadastroAdmin = findViewById(R.id.editCadastroAdmin);
@@ -52,71 +32,42 @@ public class LoginAdminActivity extends AppCompatActivity {
         btnEntrar = findViewById(R.id.btnEntrar);
         btnCadastrar = findViewById(R.id.btnCadastrar);
 
-        btnEntrar.setOnClickListener(v -> validarLogin());
-        btnCadastrar.setOnClickListener(v -> cadastrarAdmin());
+        // Inicializa ViewModel
+        viewModel = new ViewModelProvider(this).get(com.example.domus.presentation.loginadmin.LoginAdminViewModel.class);
+
+        // Observa estado da UI
+        viewModel.getUiState().observe(this, this::updateUi);
+
+        // Observa navegação
+        viewModel.getNavigationToDashboard().observe(this, shouldNavigate -> {
+            if (shouldNavigate) {
+                navigateToDashboard();
+            }
+        });
+
+        // Configura listeners
+        btnEntrar.setOnClickListener(v -> {
+            String usuario = editLoginAdmin.getText().toString().trim();
+            String senha = editLoginSenha.getText().toString().trim();
+            viewModel.onLoginClicked(usuario, senha);
+        });
+
+        btnCadastrar.setOnClickListener(v -> {
+            String usuario = editCadastroAdmin.getText().toString().trim();
+            String senha = editCadastroSenha.getText().toString().trim();
+
+            if (usuario.isEmpty() || senha.isEmpty()) {
+                Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Mostra dialog para senha master
+            showMasterPasswordDialog(usuario, senha);
+        });
     }
 
-    // Verifica se já existe algum admin cadastrado
-    private boolean existeAdministrador() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(BDCondominioHelper.TABELA_USUARIOS_ADMIN,
-                new String[]{BDCondominioHelper.COL_ADMIN_USUARIO},
-                null, null, null, null, null);
-        boolean existe = cursor != null && cursor.getCount() > 0;
-        if (cursor != null) cursor.close();
-        return existe;
-    }
-
-    // Gera hash SHA-256
-    private String gerarHash(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = md.digest(input.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : bytes) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void validarLogin() {
-        String usuario = editLoginAdmin.getText().toString().trim();
-        String senha = editLoginSenha.getText().toString().trim();
-
-        if (usuario.isEmpty() || senha.isEmpty()) {
-            Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String senhaHash = gerarHash(senha);
-
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(BDCondominioHelper.TABELA_USUARIOS_ADMIN,
-                new String[]{BDCondominioHelper.COL_ADMIN_USUARIO},
-                BDCondominioHelper.COL_ADMIN_USUARIO + "=? AND " + BDCondominioHelper.COL_ADMIN_SENHA_HASH + "=?",
-                new String[]{usuario, senhaHash},
-                null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            cursor.close();
-
-            // Salva admin logado
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            prefs.edit().putString(KEY_ADMIN_LOGADO, usuario).apply();
-
-            Toast.makeText(this, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(LoginAdminActivity.this, DashBoardActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Usuário ou senha incorretos!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void cadastrarAdmin() {
-        EditText inputMaster = new EditText(this);
+    private void showMasterPasswordDialog(String usuario, String senha) {
+        android.widget.EditText inputMaster = new android.widget.EditText(this);
         inputMaster.setHint("Digite a senha master");
 
         new AlertDialog.Builder(this)
@@ -125,51 +76,59 @@ public class LoginAdminActivity extends AppCompatActivity {
                 .setView(inputMaster)
                 .setPositiveButton("OK", (dialog, which) -> {
                     String masterSenha = inputMaster.getText().toString().trim();
-                    if (!"master".equals(masterSenha)) {
-                        Toast.makeText(this, "Senha master incorreta! Cadastro cancelado.", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    String usuario = editCadastroAdmin.getText().toString().trim();
-                    String senha = editCadastroSenha.getText().toString().trim();
-
-                    if (usuario.isEmpty() || senha.isEmpty()) {
-                        Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    if (senha.length() != 6 || !senha.matches("\\d{6}")) {
-                        Toast.makeText(this, "A senha deve ter exatamente 6 dígitos numéricos!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    String senhaHash = gerarHash(senha);
-                    String dataCadastro = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-
-                    SQLiteDatabase db = dbHelper.getWritableDatabase();
-                    ContentValues values = new ContentValues();
-                    values.put(BDCondominioHelper.COL_ADMIN_USUARIO, usuario);
-                    values.put(BDCondominioHelper.COL_ADMIN_SENHA_HASH, senhaHash);
-                    values.put(BDCondominioHelper.COL_ADMIN_TIPO, "admin");
-                    values.put(BDCondominioHelper.COL_ADMIN_DATA, dataCadastro);
-
-                    long resultado = db.insert(BDCondominioHelper.TABELA_USUARIOS_ADMIN, null, values);
-                    if (resultado != -1) {
-                        Toast.makeText(this, "Admin cadastrado com sucesso! Faça seu login.", Toast.LENGTH_LONG).show();
-                        editCadastroAdmin.setText("");
-                        editCadastroSenha.setText("");
-                    } else {
-                        Toast.makeText(this, "Erro ao cadastrar. Usuário já existe?", Toast.LENGTH_SHORT).show();
-                    }
-
+                    viewModel.onRegisterClicked(usuario, senha, masterSenha);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    // Recupera o admin logado em qualquer Activity
-    public static String getAdminLogado(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        return prefs.getString(KEY_ADMIN_LOGADO, null);
+    private void updateUi(com.example.domus.presentation.loginadmin.LoginAdminUiState uiState) {
+        if (uiState.isLoading()) {
+            btnEntrar.setEnabled(false);
+            btnCadastrar.setEnabled(false);
+            btnEntrar.setText("Entrando...");
+            return;
+        }
+
+        btnEntrar.setEnabled(true);
+        btnCadastrar.setEnabled(true);
+        btnEntrar.setText("Entrar");
+
+        if (uiState.getSuccessMessage() != null) {
+            Toast.makeText(this, uiState.getSuccessMessage(), Toast.LENGTH_LONG).show();
+            viewModel.onMessageShown();
+
+            // Limpa campos de cadastro em caso de sucesso
+            if (editCadastroAdmin != null) editCadastroAdmin.setText("");
+            if (editCadastroSenha != null) editCadastroSenha.setText("");
+        }
+
+        if (uiState.getErrorMessage() != null) {
+            Toast.makeText(this, uiState.getErrorMessage(), Toast.LENGTH_SHORT).show();
+            viewModel.onMessageShown();
+        }
+
+        // Controla visibilidade do formulário de cadastro
+        if (!uiState.isShowCadastroForm()) {
+            btnCadastrar.setVisibility(View.GONE);
+            editCadastroAdmin.setVisibility(View.GONE);
+            editCadastroSenha.setVisibility(View.GONE);
+
+            // Ajusta margem do botão Entrar quando o cadastro está oculto
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) btnEntrar.getLayoutParams();
+            params.topMargin = 0;
+            btnEntrar.setLayoutParams(params);
+        } else {
+            btnCadastrar.setVisibility(View.VISIBLE);
+            editCadastroAdmin.setVisibility(View.VISIBLE);
+            editCadastroSenha.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void navigateToDashboard() {
+        Intent intent = new Intent(this, DashBoardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

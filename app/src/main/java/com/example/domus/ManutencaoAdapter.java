@@ -13,10 +13,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.content.FileProvider;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ManutencaoAdapter extends RecyclerView.Adapter<ManutencaoAdapter.ManutencaoViewHolder> {
 
@@ -35,48 +38,77 @@ public class ManutencaoAdapter extends RecyclerView.Adapter<ManutencaoAdapter.Ma
         this.listener = listener;
     }
 
+    @NonNull
     @Override
-    public ManutencaoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ManutencaoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_manutencao, parent, false);
         return new ManutencaoViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ManutencaoViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ManutencaoViewHolder holder, int position) {
         Manutencao m = lista.get(position);
 
-        // Construir string de dados
-        StringBuilder dados = new StringBuilder();
-        dados.append("Tipo: ").append(m.getTipo() != null ? m.getTipo() : "N/A").append("\n")
-                .append("Data/Hora: ").append(m.getDataHora() != null ? m.getDataHora() : "N/A").append("\n")
-                .append("Local: ").append(m.getLocal() != null ? m.getLocal() : "N/A").append("\n")
-                .append("Serviço: ").append(m.getServico() != null ? m.getServico() : "N/A").append("\n")
-                .append("Responsável: ").append(m.getResponsavel() != null ? m.getResponsavel() : "N/A").append("\n")
-                .append("Valor: ").append(m.getValor() != null ? m.getValor() : "N/A");
+        // Tipo
+        holder.tvTipoManutencao.setText(m.getTipo() != null ? m.getTipo() : "Manutenção");
 
-        holder.tvDados.setText(dados.toString());
+        // Data/Hora formatada
+        String dataHora = m.getDataHora() != null ? m.getDataHora() : "";
+        String dataFormatada = formatarDataHora(dataHora);
+        holder.tvDataHoraManutencao.setText("📅 " + dataFormatada);
+
+        // Serviço
+        String servico = m.getServico() != null ? m.getServico() : "Não informado";
+        holder.tvServicoManutencao.setText("🔧 Serviço: " + servico);
+
+        // Local
+        String local = m.getLocal() != null ? m.getLocal() : "Não informado";
+        holder.tvLocalManutencao.setText("📍 Local: " + local);
+
+        // Responsável
+        String responsavel = m.getResponsavel() != null ? m.getResponsavel() : "Não informado";
+        holder.tvResponsavelManutencao.setText("👤 Responsável: " + responsavel);
+
+        // Valor
+        String valor = m.getValor() != null ? m.getValor() : "0,00";
+        holder.tvValorManutencao.setText("💰 Valor: R$ " + valor);
+
+        // Notas/Observações
+        String notas = m.getNotas() != null ? m.getNotas() : "";
+        if (!notas.isEmpty()) {
+            holder.tvNotasManutencao.setText("📝 Observações: " + notas);
+            holder.tvNotasManutencao.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvNotasManutencao.setVisibility(View.GONE);
+        }
 
         // Limpar layout de anexos
         holder.layoutAnexos.removeAllViews();
 
         // Mostrar anexos
         if (m.getAnexos() != null && !m.getAnexos().isEmpty()) {
+            holder.tvAnexosLabel.setVisibility(View.VISIBLE);
+            holder.layoutAnexos.setVisibility(View.VISIBLE);
+
             for (String anexoUri : m.getAnexos()) {
                 TextView tvAnexo = new TextView(context);
-
-                // Obter nome do arquivo da URI
                 String fileName = getFileNameFromUri(Uri.parse(anexoUri));
-                tvAnexo.setText("📎 " + fileName);
-                tvAnexo.setTextColor(0xFF1976D2);
-                tvAnexo.setPadding(8, 4, 8, 4);
+                String icone = getIconeArquivo(fileName);
+                tvAnexo.setText(icone + " " + fileName);
+                tvAnexo.setTextSize(13);
+                tvAnexo.setTextColor(0xFF2196F3);
+                tvAnexo.setPadding(8, 8, 8, 8);
+                tvAnexo.setBackgroundResource(android.R.drawable.list_selector_background);
 
                 tvAnexo.setOnClickListener(v -> abrirAnexo(Uri.parse(anexoUri)));
-
                 holder.layoutAnexos.addView(tvAnexo);
             }
+        } else {
+            holder.tvAnexosLabel.setVisibility(View.GONE);
+            holder.layoutAnexos.setVisibility(View.GONE);
         }
 
-        // Botões Editar e Excluir
+        // Botões
         holder.btnEditar.setOnClickListener(v -> {
             if (listener != null) listener.onEditar(position);
         });
@@ -91,7 +123,28 @@ public class ManutencaoAdapter extends RecyclerView.Adapter<ManutencaoAdapter.Ma
         return lista != null ? lista.size() : 0;
     }
 
-    // Método para obter o nome do arquivo a partir de uma URI
+    private String formatarDataHora(String dataHoraStr) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            Date date = inputFormat.parse(dataHoraStr);
+            return outputFormat.format(date);
+        } catch (Exception e) {
+            return dataHoraStr;
+        }
+    }
+
+    private String getIconeArquivo(String fileName) {
+        if (fileName == null) return "📎";
+        if (fileName.endsWith(".pdf")) return "📄";
+        if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) return "📝";
+        if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return "📊";
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")) return "🖼️";
+        if (fileName.endsWith(".mp4")) return "🎥";
+        if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) return "🗜️";
+        return "📎";
+    }
+
     private String getFileNameFromUri(Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
@@ -112,23 +165,18 @@ public class ManutencaoAdapter extends RecyclerView.Adapter<ManutencaoAdapter.Ma
         return result;
     }
 
-    // Método para abrir anexos - CORRIGIDO para URIs de conteúdo
     private void abrirAnexo(Uri uri) {
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-
-            // Determinar o tipo MIME baseado na extensão do arquivo
             String mimeType = getMimeTypeFromUri(uri);
 
             intent.setDataAndType(uri, mimeType);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            // Verificar se há app para abrir o arquivo
             if (intent.resolveActivity(context.getPackageManager()) != null) {
                 context.startActivity(intent);
             } else {
-                // Tentar com tipo genérico se não encontrar app específico
                 Intent genericIntent = new Intent(Intent.ACTION_VIEW);
                 genericIntent.setDataAndType(uri, "*/*");
                 genericIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -146,13 +194,11 @@ public class ManutencaoAdapter extends RecyclerView.Adapter<ManutencaoAdapter.Ma
         }
     }
 
-    // Método para obter o tipo MIME baseado na URI
     private String getMimeTypeFromUri(Uri uri) {
         String fileName = getFileNameFromUri(uri);
         return getMimeType(fileName);
     }
 
-    // Método auxiliar para determinar o tipo MIME do arquivo
     private String getMimeType(String fileName) {
         if (fileName == null) return "*/*";
 
@@ -179,13 +225,27 @@ public class ManutencaoAdapter extends RecyclerView.Adapter<ManutencaoAdapter.Ma
     }
 
     static class ManutencaoViewHolder extends RecyclerView.ViewHolder {
-        TextView tvDados;
+        TextView tvTipoManutencao;
+        TextView tvDataHoraManutencao;
+        TextView tvServicoManutencao;
+        TextView tvLocalManutencao;
+        TextView tvResponsavelManutencao;
+        TextView tvValorManutencao;
+        TextView tvNotasManutencao;
+        TextView tvAnexosLabel;
         LinearLayout layoutAnexos;
         Button btnEditar, btnExcluir;
 
-        public ManutencaoViewHolder(View itemView) {
+        public ManutencaoViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvDados = itemView.findViewById(R.id.tvManutencaoDados);
+            tvTipoManutencao = itemView.findViewById(R.id.tvTipoManutencao);
+            tvDataHoraManutencao = itemView.findViewById(R.id.tvDataHoraManutencao);
+            tvServicoManutencao = itemView.findViewById(R.id.tvServicoManutencao);
+            tvLocalManutencao = itemView.findViewById(R.id.tvLocalManutencao);
+            tvResponsavelManutencao = itemView.findViewById(R.id.tvResponsavelManutencao);
+            tvValorManutencao = itemView.findViewById(R.id.tvValorManutencao);
+            tvNotasManutencao = itemView.findViewById(R.id.tvNotasManutencao);
+            tvAnexosLabel = itemView.findViewById(R.id.tvAnexosLabel);
             layoutAnexos = itemView.findViewById(R.id.layoutAnexosManutencao);
             btnEditar = itemView.findViewById(R.id.btnEditarManutencao);
             btnExcluir = itemView.findViewById(R.id.btnExcluirManutencao);

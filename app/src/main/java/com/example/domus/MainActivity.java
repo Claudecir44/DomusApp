@@ -6,8 +6,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.LinearLayout;
 import android.util.Log;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.widget.ImageView;
 
@@ -15,6 +15,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.database.sqlite.SQLiteDatabase;
+
+import com.example.domus.presentation.loginadmin.LoginAdminActivity;
+import com.example.domus.presentation.loginmorador.LoginMoradorActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Método que inicializa membros principais
     private void inicializarComponentesBasicos() {
         Log.d(TAG, "🔧 INICIALIZANDO COMPONENTES BÁSICOS");
 
@@ -67,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Método para testar conexão com banco local SQLite
     private void testarConexaoBanco() {
         if (dbHelper == null) return;
 
@@ -81,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Método que executa diagnose
     private void executarDiagnosticoCritico() {
         Log.d(TAG, "🔍🔍🔍 DIAGNÓSTICO CRÍTICO INICIADO 🔍🔍🔍");
 
@@ -91,52 +91,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "🔍🔍🔍 DIAGNÓSTICO CRÍTICO CONCLUÍDO 🔍🔍🔍");
     }
 
-    // 🔧 VERIFICAÇÃO IMEDIATA DE REDE (apenas para verificar conectividade local)
-    private void verificarRedeImediata() {
-        try {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            NetworkInfo activeNetwork = cm != null ? cm.getActiveNetworkInfo() : null;
-
-            if (activeNetwork != null && activeNetwork.isConnected()) {
-                Log.d(TAG, "🌐✅ REDE DISPONÍVEL: " + activeNetwork.getTypeName());
-                Log.d(TAG, "📶 Conectado: " + activeNetwork.isConnected());
-            } else {
-                Log.e(TAG, "🌐❌ SEM CONEXÃO DE REDE");
-                mostrarToast("⚠️ Sem conexão de internet");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro ao verificar rede: " + e.getMessage());
-        }
-    }
-
-    // 🔧 VERIFICAÇÃO DO BANCO DE DADOS
-    private void verificarBancoDados() {
-        if (dbHelper == null) {
-            Log.e(TAG, "❌ DB Helper é null - não é possível verificar banco");
-            return;
-        }
-
-        try {
-            // Verificar se tabelas existem
-            String[] tabelas = {
-                    BDCondominioHelper.TABELA_MORADORES,
-                    BDCondominioHelper.TABELA_USUARIOS_ADMIN,
-                    BDCondominioHelper.TABELA_OCORRENCIAS
-            };
-
-            for (String tabela : tabelas) {
-                boolean existe = dbHelper.tabelaExiste(tabela);
-                int registros = dbHelper.contarRegistros(tabela);
-                Log.d(TAG, "🗃️ " + tabela + ": " + (existe ? "✅ EXISTE" : "❌ AUSENTE") +
-                        " | Registros: " + registros);
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro ao verificar banco: " + e.getMessage());
-        }
-    }
-
-    // Diálogo para escolha de usuário
     private void showUserChoiceDialog() {
         Log.d(TAG, "💬 MOSTRANDO DIÁLOGO DE ESCOLHA DE USUÁRIO");
 
@@ -146,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("Como você deseja acessar o sistema?")
                     .setPositiveButton("👑 Administrador", (dialog, which) -> {
                         Log.d(TAG, "➡️ Usuário escolheu: Administrador");
-                        verificarEIrParaAdmin();
+                        startActivity(new Intent(MainActivity.this, LoginAdminActivity.class));
                     })
                     .setNegativeButton("👥 Morador", (dialog, which) -> {
                         Log.d(TAG, "➡️ Usuário escolheu: Morador");
@@ -159,45 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             Log.e(TAG, "💥 Erro ao mostrar diálogo: " + e.getMessage());
-            // Fallback: ir direto para login de admin
             startActivity(new Intent(this, LoginAdminActivity.class));
-        }
-    }
-
-    // 🔧 VERIFICAR E IR PARA TELA DE ADMIN CORRETA
-    private void verificarEIrParaAdmin() {
-        try {
-            boolean adminExiste = isAdminRegistered();
-            Log.d(TAG, "🔐 Admin registrado localmente: " + adminExiste);
-
-            if (!adminExiste) {
-                Log.d(TAG, "➡️ Indo para LoginMasterActivity (primeiro admin)");
-                startActivity(new Intent(MainActivity.this, LoginMasterActivity.class));
-            } else {
-                Log.d(TAG, "➡️ Indo para LoginAdminActivity (admin existente)");
-                startActivity(new Intent(MainActivity.this, LoginAdminActivity.class));
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro ao verificar admin: " + e.getMessage());
-            // Fallback para tela principal de admin
-            startActivity(new Intent(this, LoginAdminActivity.class));
-        }
-    }
-
-    // Verifica se existe admin registrado
-    private boolean isAdminRegistered() {
-        if (dbHelper == null) {
-            Log.e(TAG, "❌ DB Helper null - não é possível verificar admin");
-            return false;
-        }
-
-        try {
-            boolean existe = dbHelper.existeAdmin();
-            Log.d(TAG, "🔐 Verificação de admin: " + existe);
-            return existe;
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro ao verificar admin: " + e.getMessage());
-            return false;
         }
     }
 
@@ -206,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Log.d(TAG, "🔄 MAIN ACTIVITY - ONRESUME");
 
-        // Atualizar diagnóstico ao retornar
         new Handler().postDelayed(() -> {
             Log.d(TAG, "🔍 ATUALIZANDO DIAGNÓSTICO AO RETORNAR");
             verificarStatusCompleto();
@@ -223,24 +138,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🔧 VERIFICAR SE REDE ESTÁ DISPONÍVEL (apenas para info)
-    private boolean isRedeDisponivel() {
-        try {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = cm != null ? cm.getActiveNetworkInfo() : null;
-            return networkInfo != null && networkInfo.isConnected();
-        } catch (Exception e) {
-            Log.e(TAG, "💥 Erro ao verificar rede: " + e.getMessage());
-            return false;
-        }
-    }
-
-    // 🔧 MOSTRAR TOAST
     private void mostrarToast(String mensagem) {
         runOnUiThread(() -> Toast.makeText(this, mensagem, Toast.LENGTH_LONG).show());
     }
 
-    // 🔧 VERIFICAR STATUS COMPLETO (apenas local)
     private void verificarStatusCompleto() {
         Log.d(TAG, "📊 VERIFICAÇÃO DE STATUS COMPLETA");
 

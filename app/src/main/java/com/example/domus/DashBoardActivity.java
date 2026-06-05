@@ -1,177 +1,147 @@
-package com.example.domus;
+package com.example.domus.presentation.dashboard;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.ViewModelProvider;
+import com.example.domus.*;
+import com.example.domus.R;
+import com.example.domus.domain.model.ButtonVisibility;
+import com.example.domus.presentation.dashboard.DashBoardViewModel.NavigationTarget;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DashBoardActivity extends AppCompatActivity {
 
-    private Button btnCadastro, btnLista, btnBackup, btnRegistroOcorrencias,
-            btnFuncionarios, btnManutencao, btnAssembleias, btnDespesas,
-            btnAdministradores, btnListaAssembleias, btnListaDespesas,
-            btnAvisos, btnListaAvisos;
-
-    private String tipoUsuario;
+    private DashBoardViewModel viewModel;
+    private Map<String, Button> buttons = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dash_board);
 
-        // Inicializa todos os botões
+        // Inicializa ViewModel
+        viewModel = new ViewModelProvider(this).get(DashBoardViewModel.class);
+
+        // Inicializa botões
         initializeButtons();
 
-        // Recupera o tipo de usuário
-        tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+        // Observa estado da UI
+        viewModel.getUiState().observe(this, this::updateUi);
 
-        // Configura visibilidade baseada no tipo de usuário
-        configurarVisibilidadeBotoes();
+        // Observa eventos de navegação
+        viewModel.getNavigationEvent().observe(this, this::handleNavigation);
 
-        // Configura os cliques
-        configurarCliques();
+        // Carrega permissões do usuário
+        String tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+        String moradorNome = getIntent().getStringExtra("morador_nome");
+        viewModel.loadUserPermissions(tipoUsuario, moradorNome);
     }
 
     private void initializeButtons() {
-        btnCadastro = findViewById(R.id.buttonCadastroMoradores);
-        btnLista = findViewById(R.id.buttonListaMoradores);
-        btnBackup = findViewById(R.id.buttonBackup);
-        btnRegistroOcorrencias = findViewById(R.id.buttonRegistroOcorrencias);
-        btnFuncionarios = findViewById(R.id.buttonFuncionarios);
-        btnManutencao = findViewById(R.id.buttonManutencao);
-        btnAssembleias = findViewById(R.id.buttonAssembleias);
-        btnDespesas = findViewById(R.id.buttonDespesas);
-        btnAdministradores = findViewById(R.id.buttonAdministradores);
-        btnListaAssembleias = findViewById(R.id.buttonListaAssembleias);
-        btnListaDespesas = findViewById(R.id.buttonListaDespesas);
-        btnAvisos = findViewById(R.id.buttonAvisos);
-        btnListaAvisos = findViewById(R.id.buttonListaAvisos);
-    }
+        buttons.put("cadastro", findViewById(R.id.buttonCadastroMoradores));
+        buttons.put("lista", findViewById(R.id.buttonListaMoradores));
+        buttons.put("backup", findViewById(R.id.buttonBackup));
+        buttons.put("ocorrencias", findViewById(R.id.buttonRegistroOcorrencias));
+        buttons.put("funcionarios", findViewById(R.id.buttonFuncionarios));
+        buttons.put("manutencao", findViewById(R.id.buttonManutencao));
+        buttons.put("assembleias", findViewById(R.id.buttonAssembleias));
+        buttons.put("despesas", findViewById(R.id.buttonDespesas));
+        buttons.put("administradores", findViewById(R.id.buttonAdministradores));
+        buttons.put("avisos", findViewById(R.id.buttonAvisos));
+        buttons.put("listaAssembleias", findViewById(R.id.buttonListaAssembleias));
+        buttons.put("listaDespesas", findViewById(R.id.buttonListaDespesas));
+        buttons.put("listaAvisos", findViewById(R.id.buttonListaAvisos));
 
-    private void configurarVisibilidadeBotoes() {
-        if (isMorador()) {
-            // Oculta botões de administração para moradores
-            ocultarBotoesAdministracao();
-            // Mostra apenas botões de listagem
-            mostrarBotoesListagem();
-        } else {
-            // Para administradores, mostra todos os botões
-            mostrarTodosBotoes();
+        // Configura cliques
+        for (Map.Entry<String, Button> entry : buttons.entrySet()) {
+            entry.getValue().setOnClickListener(v ->
+                    viewModel.onButtonClicked(entry.getKey()));
         }
     }
 
-    private boolean isMorador() {
-        return tipoUsuario != null && "morador".equalsIgnoreCase(tipoUsuario);
+    private void updateUi(DashBoardUiState uiState) {
+        if (uiState.isLoading()) return;
+
+        if (uiState.getErrorMessage() != null) {
+            // Mostrar erro
+            android.widget.Toast.makeText(this, uiState.getErrorMessage(),
+                    android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        ButtonVisibility visibility = uiState.getButtonVisibility();
+        if (visibility != null) {
+            for (Map.Entry<String, Button> entry : buttons.entrySet()) {
+                entry.getValue().setVisibility(
+                        visibility.isVisible(entry.getKey()) ? View.VISIBLE : View.GONE
+                );
+            }
+        }
     }
 
-    private void ocultarBotoesAdministracao() {
-        btnCadastro.setVisibility(View.GONE);
-        btnLista.setVisibility(View.GONE);
-        btnBackup.setVisibility(View.GONE);
-        btnRegistroOcorrencias.setVisibility(View.GONE);
-        btnFuncionarios.setVisibility(View.GONE);
-        btnManutencao.setVisibility(View.GONE);
-        btnAdministradores.setVisibility(View.GONE);
-        btnAssembleias.setVisibility(View.GONE);
-        btnDespesas.setVisibility(View.GONE);
-        btnAvisos.setVisibility(View.GONE);
-    }
+    private void handleNavigation(DashBoardViewModel.NavigationEvent event) {
+        Intent intent = null;
 
-    private void mostrarBotoesListagem() {
-        btnListaAssembleias.setVisibility(View.VISIBLE);
-        btnListaDespesas.setVisibility(View.VISIBLE);
-        btnListaAvisos.setVisibility(View.VISIBLE);
-    }
+        switch (event.getTarget()) {
+            case CADASTRO_MORADOR:
+                intent = new Intent(this, CadastroMoradorActivity.class);
+                break;
+            case LISTA_MORADORES:
+                intent = new Intent(this, ListaMoradoresActivity.class);
+                break;
+            case BACKUP:
+                intent = new Intent(this, BackupActivity.class);
+                break;
+            case REGISTRO_OCORRENCIAS:
+                intent = new Intent(this, RegistroOcorrenciasActivity.class);
+                break;
+            case FUNCIONARIOS:
+                intent = new Intent(this, FuncionariosActivity.class);
+                break;
+            case MANUTENCAO:
+                intent = new Intent(this, CadastroManutencaoActivity.class);
+                break;
+            case REGISTRO_ASSEMBLEIAS:
+                intent = new Intent(this, RegistroAssembleiasActivity.class);
+                break;
+            case REGISTRO_DESPESAS:
+                intent = new Intent(this, RegistroDespesasActivity.class);
+                break;
+            case ADMINISTRADORES:
+                intent = new Intent(this, AdministradoresActivity.class);
+                break;
+            case CADASTRO_AVISOS:
+                intent = new Intent(this, CadastroAvisosActivity.class);
+                break;
+            case LISTA_ASSEMBLEIAS:
+                intent = new Intent(this, ListaAssembleiasActivity.class);
+                intent.putExtra("tipo_usuario", event.getTipoUsuario());
+                break;
+            case LISTA_DESPESAS:
+                intent = new Intent(this, ListaDespesasActivity.class);
+                intent.putExtra("tipo_usuario", event.getTipoUsuario());
+                break;
+            case LISTA_AVISOS:
+                intent = new Intent(this, ListaAvisosActivity.class);
+                intent.putExtra("tipo_usuario", event.getTipoUsuario());
+                break;
+        }
 
-    private void mostrarTodosBotoes() {
-        btnCadastro.setVisibility(View.VISIBLE);
-        btnLista.setVisibility(View.VISIBLE);
-        btnBackup.setVisibility(View.VISIBLE);
-        btnRegistroOcorrencias.setVisibility(View.VISIBLE);
-        btnFuncionarios.setVisibility(View.VISIBLE);
-        btnManutencao.setVisibility(View.VISIBLE);
-        btnAdministradores.setVisibility(View.VISIBLE);
-        btnAssembleias.setVisibility(View.VISIBLE);
-        btnDespesas.setVisibility(View.VISIBLE);
-        btnAvisos.setVisibility(View.VISIBLE);
-        btnListaAssembleias.setVisibility(View.VISIBLE);
-        btnListaDespesas.setVisibility(View.VISIBLE);
-        btnListaAvisos.setVisibility(View.VISIBLE);
-    }
-
-    private void configurarCliques() {
-        // Cadastro de Moradores
-        btnCadastro.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, CadastroMoradorActivity.class)));
-
-        // Lista de Moradores
-        btnLista.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, ListaMoradoresActivity.class)));
-
-        // Backup
-        btnBackup.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, BackupActivity.class)));
-
-        // Registro de Ocorrências
-        btnRegistroOcorrencias.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, RegistroOcorrenciasActivity.class)));
-
-        // Cadastro de Funcionários
-        btnFuncionarios.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, FuncionariosActivity.class)));
-
-        // Cadastro de Manutenção
-        btnManutencao.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, CadastroManutencaoActivity.class)));
-
-        // Registro de Assembleias
-        btnAssembleias.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, RegistroAssembleiasActivity.class)));
-
-        // Lista de Assembleias
-        btnListaAssembleias.setOnClickListener(v -> {
-            Intent intent = new Intent(DashBoardActivity.this, ListaAssembleiasActivity.class);
-            intent.putExtra("tipo_usuario", tipoUsuario);
+        if (intent != null) {
             startActivity(intent);
-        });
-
-        // Registro de Despesas
-        btnDespesas.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, RegistroDespesasActivity.class)));
-
-        // Lista de Despesas (Prestação de Contas)
-        btnListaDespesas.setOnClickListener(v -> {
-            Intent intent = new Intent(DashBoardActivity.this, ListaDespesasActivity.class);
-            intent.putExtra("tipo_usuario", tipoUsuario);
-            startActivity(intent);
-        });
-
-        // Administradores
-        btnAdministradores.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, AdministradoresActivity.class)));
-
-        // Cadastro de Avisos
-        btnAvisos.setOnClickListener(v -> startActivity(
-                new Intent(DashBoardActivity.this, CadastroAvisosActivity.class)));
-
-        // Lista de Avisos
-        btnListaAvisos.setOnClickListener(v -> {
-            Intent intent = new Intent(DashBoardActivity.this, ListaAvisosActivity.class);
-            intent.putExtra("tipo_usuario", tipoUsuario);
-            startActivity(intent);
-        });
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Atualiza a visibilidade ao retornar para esta activity
-        if (isMorador()) {
-            ocultarBotoesAdministracao();
-            mostrarBotoesListagem();
-        }
+        // Recarrega permissões ao retornar
+        String tipoUsuario = getIntent().getStringExtra("tipo_usuario");
+        String moradorNome = getIntent().getStringExtra("morador_nome");
+        viewModel.loadUserPermissions(tipoUsuario, moradorNome);
     }
 }

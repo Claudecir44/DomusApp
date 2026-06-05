@@ -1,12 +1,14 @@
 package com.example.domus;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.List;
 
 public class MoradorAdapter extends RecyclerView.Adapter<MoradorAdapter.MoradorViewHolder> {
@@ -44,35 +47,147 @@ public class MoradorAdapter extends RecyclerView.Adapter<MoradorAdapter.MoradorV
     public void onBindViewHolder(@NonNull MoradorViewHolder holder, int position) {
         JSONObject morador = moradores.get(position);
         String codigo = morador.optString("cod");
+        String nome = morador.optString("nome");
+        String cpf = morador.optString("cpf");
+        String email = morador.optString("email", "");
+        String telefone = morador.optString("telefone", "");
+        String rua = morador.optString("rua", "");
+        String numero = morador.optString("numero", "");
+        String bairro = morador.optString("bairro", "");
+        String cidade = morador.optString("cidade", "");
+        String estado = morador.optString("estado", "");
+        String quadra = morador.optString("quadra", "");
+        String lote = morador.optString("lote", "");
+        String imagePath = morador.optString("imagem_uri", "");
 
-        holder.tvDados.setText(
-                "Cod: " + codigo + "\n" +
-                        "Nome: " + morador.optString("nome") + "\n" +
-                        "CPF: " + morador.optString("cpf") + "\n" +
-                        "Email: " + morador.optString("email", "") + "\n" +
-                        "Rua: " + morador.optString("rua", "") + "\n" +
-                        "Número: " + morador.optString("numero", "") + "\n" +
-                        "Telefone: " + morador.optString("telefone", "") + "\n" +
-                        "Quadra: " + morador.optString("quadra", "") + "  Lote: " + morador.optString("lote", "")
-        );
+        // Nome
+        holder.tvNomeMorador.setText(nome != null && !nome.isEmpty() ? nome : "Nome não informado");
 
-        // Carregar foto usando o caminho salvo permanentemente
-        carregarFoto(holder.imgMorador, morador.optString("foto", ""));
+        // Código
+        holder.tvCodigoMorador.setText("📋 Código: " + codigo);
 
-        holder.btnEditar.setOnClickListener(v -> listener.onEditar(morador, position));
-        holder.btnExcluir.setOnClickListener(v -> listener.onExcluir(morador, position));
+        // Telefone
+        if (telefone != null && !telefone.isEmpty()) {
+            holder.tvTelefoneMorador.setText("📞 Telefone: " + telefone);
+            holder.tvTelefoneMorador.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvTelefoneMorador.setText("📞 Telefone: Não informado");
+            holder.tvTelefoneMorador.setVisibility(View.VISIBLE);
+        }
+
+        // CPF
+        if (cpf != null && !cpf.isEmpty()) {
+            holder.tvCpfMorador.setText("📄 CPF: " + cpf);
+            holder.tvCpfMorador.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvCpfMorador.setVisibility(View.GONE);
+        }
+
+        // Endereço Completo
+        StringBuilder endereco = new StringBuilder();
+        boolean temEndereco = false;
+
+        if (rua != null && !rua.isEmpty()) {
+            endereco.append(rua);
+            temEndereco = true;
+        }
+        if (numero != null && !numero.isEmpty()) {
+            if (temEndereco) endereco.append(", ");
+            endereco.append(numero);
+            temEndereco = true;
+        }
+        if (bairro != null && !bairro.isEmpty()) {
+            if (temEndereco) endereco.append(" - ");
+            endereco.append(bairro);
+            temEndereco = true;
+        }
+        if (cidade != null && !cidade.isEmpty()) {
+            if (temEndereco) endereco.append("\n📍 ");
+            endereco.append(cidade);
+            temEndereco = true;
+        }
+        if (estado != null && !estado.isEmpty()) {
+            if (temEndereco && !endereco.toString().contains(cidade)) endereco.append(" - ");
+            endereco.append(estado);
+            temEndereco = true;
+        }
+
+        if (temEndereco) {
+            holder.tvEnderecoMorador.setText("📍 Endereço: " + endereco.toString());
+            holder.tvEnderecoMorador.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvEnderecoMorador.setVisibility(View.GONE);
+        }
+
+        // Quadra e Lote
+        boolean temQuadra = (quadra != null && !quadra.isEmpty());
+        boolean temLote = (lote != null && !lote.isEmpty());
+
+        if (temQuadra || temLote) {
+            if (temQuadra) {
+                holder.tvQuadraMorador.setText("📐 Quadra: " + quadra);
+                holder.tvQuadraMorador.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvQuadraMorador.setVisibility(View.GONE);
+            }
+
+            if (temLote) {
+                holder.tvLoteMorador.setText("🏷️ Lote: " + lote);
+                holder.tvLoteMorador.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvLoteMorador.setVisibility(View.GONE);
+            }
+            holder.layoutQuadraLote.setVisibility(View.VISIBLE);
+        } else {
+            holder.layoutQuadraLote.setVisibility(View.GONE);
+        }
+
+        // Email
+        if (email != null && !email.isEmpty()) {
+            holder.tvEmailMorador.setText("📧 Email: " + email);
+            holder.tvEmailMorador.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvEmailMorador.setVisibility(View.GONE);
+        }
+
+        // Foto
+        carregarFoto(holder.imageMoradorItem, imagePath);
+
+        // Botões
+        holder.btnEditarMorador.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onEditar(morador, position);
+            }
+        });
+
+        holder.btnExcluirMorador.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onExcluir(morador, position);
+            }
+        });
     }
 
-    // Método atualizado para carregar fotos do armazenamento permanente
+    /**
+     * Carrega foto do morador a partir do caminho salvo
+     */
     private void carregarFoto(ImageView imageView, String imagePath) {
         if (imagePath != null && !imagePath.isEmpty()) {
             try {
-                // Carregar a imagem do caminho salvo permanentemente
                 Uri imageUri = BackupUtil.loadImageFromInternalStorage(context, imagePath);
                 if (imageUri != null) {
                     imageView.setImageURI(imageUri);
                 } else {
-                    imageView.setImageResource(android.R.drawable.ic_menu_camera);
+                    File imgFile = new File(imagePath);
+                    if (imgFile.exists()) {
+                        android.graphics.Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+                        if (bitmap != null) {
+                            imageView.setImageBitmap(bitmap);
+                        } else {
+                            imageView.setImageResource(android.R.drawable.ic_menu_camera);
+                        }
+                    } else {
+                        imageView.setImageResource(android.R.drawable.ic_menu_camera);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -88,24 +203,20 @@ public class MoradorAdapter extends RecyclerView.Adapter<MoradorAdapter.MoradorV
         return moradores.size();
     }
 
-    // Método para atualizar a lista completa
     public void atualizarListaCompleta(List<JSONObject> novaLista) {
         moradores.clear();
         moradores.addAll(novaLista);
         notifyDataSetChanged();
     }
 
-    // Método para remover um item da lista pelo código
     public void removerItemPorCodigo(String codigo) {
         for (int i = 0; i < moradores.size(); i++) {
             if (moradores.get(i).optString("cod").equals(codigo)) {
-                // Antes de remover, excluir a imagem associada
                 JSONObject morador = moradores.get(i);
-                String imagePath = morador.optString("foto", "");
+                String imagePath = morador.optString("imagem_uri", "");
                 if (!imagePath.isEmpty()) {
                     BackupUtil.deleteImageFile(imagePath);
                 }
-
                 moradores.remove(i);
                 notifyItemRemoved(i);
                 break;
@@ -113,7 +224,6 @@ public class MoradorAdapter extends RecyclerView.Adapter<MoradorAdapter.MoradorV
         }
     }
 
-    // Método para atualizar um item específico
     public void atualizarItem(JSONObject moradorAtualizado, int position) {
         if (position >= 0 && position < moradores.size()) {
             moradores.set(position, moradorAtualizado);
@@ -121,7 +231,6 @@ public class MoradorAdapter extends RecyclerView.Adapter<MoradorAdapter.MoradorV
         }
     }
 
-    // Método para encontrar a posição de um morador pelo código
     public int encontrarPosicaoPorCodigo(String codigo) {
         for (int i = 0; i < moradores.size(); i++) {
             if (moradores.get(i).optString("cod").equals(codigo)) {
@@ -132,16 +241,33 @@ public class MoradorAdapter extends RecyclerView.Adapter<MoradorAdapter.MoradorV
     }
 
     public static class MoradorViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgMorador;
-        TextView tvDados;
-        Button btnEditar, btnExcluir;
+        ImageView imageMoradorItem;
+        TextView tvNomeMorador;
+        TextView tvCodigoMorador;
+        TextView tvTelefoneMorador;
+        TextView tvCpfMorador;
+        TextView tvEnderecoMorador;
+        LinearLayout layoutQuadraLote;
+        TextView tvQuadraMorador;
+        TextView tvLoteMorador;
+        TextView tvEmailMorador;
+        Button btnEditarMorador;
+        Button btnExcluirMorador;
 
-        public MoradorViewHolder(View itemView) {
+        public MoradorViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgMorador = itemView.findViewById(R.id.imageMoradorItem);
-            tvDados = itemView.findViewById(R.id.tvMoradorDados);
-            btnEditar = itemView.findViewById(R.id.btnEditarMorador);
-            btnExcluir = itemView.findViewById(R.id.btnExcluirMorador);
+            imageMoradorItem = itemView.findViewById(R.id.imageMoradorItem);
+            tvNomeMorador = itemView.findViewById(R.id.tvNomeMorador);
+            tvCodigoMorador = itemView.findViewById(R.id.tvCodigoMorador);
+            tvTelefoneMorador = itemView.findViewById(R.id.tvTelefoneMorador);
+            tvCpfMorador = itemView.findViewById(R.id.tvCpfMorador);
+            tvEnderecoMorador = itemView.findViewById(R.id.tvEnderecoMorador);
+            layoutQuadraLote = itemView.findViewById(R.id.layoutQuadraLote);
+            tvQuadraMorador = itemView.findViewById(R.id.tvQuadraMorador);
+            tvLoteMorador = itemView.findViewById(R.id.tvLoteMorador);
+            tvEmailMorador = itemView.findViewById(R.id.tvEmailMorador);
+            btnEditarMorador = itemView.findViewById(R.id.btnEditarMorador);
+            btnExcluirMorador = itemView.findViewById(R.id.btnExcluirMorador);
         }
     }
 }

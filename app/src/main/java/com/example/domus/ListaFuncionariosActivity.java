@@ -1,6 +1,5 @@
 package com.example.domus;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -10,13 +9,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.domus.data.FuncionarioDAO;
+import com.example.domus.domain.model.Funcionario;
+
 import java.util.List;
 
 public class ListaFuncionariosActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private FuncionarioAdapter adapter;
-    private FuncionarioDAO dao;
+    private FuncionarioDAO funcionarioDAO;
+    private List<Funcionario> listaFuncionarios;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,39 +29,33 @@ public class ListaFuncionariosActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerFuncionarios);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        dao = new FuncionarioDAO(this);
-        List<Funcionario> lista = dao.listarTodos();
+        funcionarioDAO = new FuncionarioDAO(this);
 
-        adapter = new FuncionarioAdapter(lista, new FuncionarioAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(Funcionario funcionario) {
-                Toast.makeText(ListaFuncionariosActivity.this,
-                        "Funcionário selecionado: " + funcionario.getNome(),
-                        Toast.LENGTH_SHORT).show();
-            }
+        carregarLista();
+    }
 
+    private void carregarLista() {
+        listaFuncionarios = funcionarioDAO.listarTodos();
+
+        adapter = new FuncionarioAdapter(listaFuncionarios, new FuncionarioAdapter.OnItemClickListener() {
             @Override
             public void onEditar(Funcionario funcionario, int position) {
                 Intent intent = new Intent(ListaFuncionariosActivity.this, CadastroFuncionarioActivity.class);
-                intent.putExtra("index", position);
+                intent.putExtra("funcionario_id", funcionario.getId());
                 startActivity(intent);
             }
 
             @Override
             public void onExcluir(Funcionario funcionario, int position) {
-                // Confirmação de exclusão
                 new AlertDialog.Builder(ListaFuncionariosActivity.this)
                         .setTitle("Confirmação")
-                        .setMessage("Deseja realmente excluir o funcionário: " + funcionario.getNome() + "?")
-                        .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dao.excluir(funcionario.getId());
-                                adapter.removerItem(position);
-                                Toast.makeText(ListaFuncionariosActivity.this,
-                                        "Funcionário excluído: " + funcionario.getNome(),
-                                        Toast.LENGTH_SHORT).show();
-                            }
+                        .setMessage("Deseja realmente excluir o funcionário " + funcionario.getNome() + "?")
+                        .setPositiveButton("Sim", (dialog, which) -> {
+                            funcionarioDAO.excluir(funcionario.getId());
+                            listaFuncionarios.remove(position);
+                            adapter.notifyItemRemoved(position);
+                            Toast.makeText(ListaFuncionariosActivity.this,
+                                    "Funcionário excluído!", Toast.LENGTH_SHORT).show();
                         })
                         .setNegativeButton("Não", null)
                         .show();
@@ -71,8 +68,6 @@ public class ListaFuncionariosActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        List<Funcionario> lista = dao.listarTodos();
-        adapter = new FuncionarioAdapter(lista, adapter.getListener());
-        recyclerView.setAdapter(adapter);
+        carregarLista();
     }
 }

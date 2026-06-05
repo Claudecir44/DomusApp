@@ -14,21 +14,24 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DespesaAdapter extends RecyclerView.Adapter<DespesaAdapter.DespesaViewHolder> {
 
     private final List<Despesa> lista;
     private final Context context;
     private final OnDespesaListener listener;
-    private final String tipoUsuario; // Novo campo para controlar o tipo de usuário
+    private final String tipoUsuario;
 
     public interface OnDespesaListener {
         void onEditar(Despesa despesa, int position);
         void onExcluir(Despesa despesa, int position);
     }
 
-    // Construtor atualizado para receber tipoUsuario
     public DespesaAdapter(Context context, List<Despesa> lista, OnDespesaListener listener, String tipoUsuario) {
         this.context = context;
         this.lista = lista;
@@ -55,27 +58,37 @@ public class DespesaAdapter extends RecyclerView.Adapter<DespesaAdapter.DespesaV
 
     class DespesaViewHolder extends RecyclerView.ViewHolder {
 
-        TextView textDataHora, textNome, textDescricao, textValor;
+        TextView textDataHora, textNome, textDescricao, textValor, tvAnexosLabel;
         LinearLayout layoutAnexos;
-        Button btnEditar, btnExcluir, btnMostrarAnexos;
+        Button btnEditar, btnExcluir;
 
         public DespesaViewHolder(@NonNull View itemView) {
             super(itemView);
             textDataHora = itemView.findViewById(R.id.textDataHora);
             textNome = itemView.findViewById(R.id.textNomeDespesa);
             textDescricao = itemView.findViewById(R.id.textDescricaoDespesa);
-            textValor = itemView.findViewById(R.id.textValorDespesa);
+            textValor = itemView.findViewById(R.id.txtValor);
+            tvAnexosLabel = itemView.findViewById(R.id.tvAnexosLabel);
             layoutAnexos = itemView.findViewById(R.id.layoutAnexos);
             btnEditar = itemView.findViewById(R.id.btnEditarDespesa);
             btnExcluir = itemView.findViewById(R.id.btnExcluirDespesa);
-            btnMostrarAnexos = itemView.findViewById(R.id.btnMostrarAnexosDespesa);
         }
 
         void bind(Despesa despesa, int position) {
-            textDataHora.setText(despesa.getDataHora());
-            textNome.setText(despesa.getNome());
-            textDescricao.setText(despesa.getDescricao());
-            textValor.setText(String.format("R$ %.2f", despesa.getValor()));
+            // Data/Hora formatada
+            String dataFormatada = formatarDataHora(despesa.getDataHora());
+            textDataHora.setText("📅 " + dataFormatada);
+
+            // Nome da despesa
+            textNome.setText(despesa.getNome() != null ? despesa.getNome() : "Despesa");
+
+            // Descrição
+            String descricao = despesa.getDescricao() != null ? despesa.getDescricao() : "";
+            textDescricao.setText(descricao.isEmpty() ? "Sem descrição" : "📝 " + descricao);
+
+            // Valor formatado
+            NumberFormat formatoDinheiro = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+            textValor.setText(formatoDinheiro.format(despesa.getValor()));
 
             // Controlar visibilidade dos botões baseado no tipo de usuário
             if ("morador".equalsIgnoreCase(tipoUsuario)) {
@@ -86,28 +99,37 @@ public class DespesaAdapter extends RecyclerView.Adapter<DespesaAdapter.DespesaV
                 btnExcluir.setVisibility(View.VISIBLE);
             }
 
+            // Configurar anexos
             layoutAnexos.removeAllViews();
-            btnMostrarAnexos.setVisibility(View.GONE);
 
             if (despesa.getAnexos() != null && !despesa.getAnexos().isEmpty()) {
-                btnMostrarAnexos.setVisibility(View.VISIBLE);
-                btnMostrarAnexos.setOnClickListener(v -> {
-                    layoutAnexos.removeAllViews();
-                    layoutAnexos.setVisibility(View.VISIBLE);
+                tvAnexosLabel.setVisibility(View.VISIBLE);
+                layoutAnexos.setVisibility(View.VISIBLE);
 
-                    for (String uriString : despesa.getAnexos()) {
-                        TextView tvAnexo = new TextView(context);
+                for (String uriString : despesa.getAnexos()) {
+                    try {
                         Uri uri = Uri.parse(uriString);
-                        String nomeArquivo = uri.getLastPathSegment();
-                        tvAnexo.setText(nomeArquivo != null ? nomeArquivo : "Arquivo");
-                        tvAnexo.setTextColor(0xFF1976D2);
-                        tvAnexo.setPadding(4, 4, 4, 4);
-                        tvAnexo.setOnClickListener(view -> abrirArquivo(uri));
+                        String nomeArquivo = getFileNameFromUri(uri);
+                        String icone = getIconeArquivo(nomeArquivo);
+
+                        TextView tvAnexo = new TextView(context);
+                        tvAnexo.setText(icone + " " + nomeArquivo);
+                        tvAnexo.setTextSize(13);
+                        tvAnexo.setTextColor(0xFF2196F3);
+                        tvAnexo.setPadding(8, 8, 8, 8);
+                        tvAnexo.setBackgroundResource(android.R.drawable.list_selector_background);
+                        tvAnexo.setOnClickListener(v -> abrirArquivo(uri));
                         layoutAnexos.addView(tvAnexo);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                });
+                }
+            } else {
+                tvAnexosLabel.setVisibility(View.GONE);
+                layoutAnexos.setVisibility(View.GONE);
             }
 
+            // Botões
             btnEditar.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onEditar(despesa, position);
@@ -121,23 +143,45 @@ public class DespesaAdapter extends RecyclerView.Adapter<DespesaAdapter.DespesaV
             });
         }
 
+        private String formatarDataHora(String dataHoraStr) {
+            try {
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                Date date = inputFormat.parse(dataHoraStr);
+                return outputFormat.format(date);
+            } catch (Exception e) {
+                return dataHoraStr;
+            }
+        }
+
+        private String getIconeArquivo(String fileName) {
+            if (fileName == null) return "📎";
+            if (fileName.endsWith(".pdf")) return "📄";
+            if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) return "📝";
+            if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return "📊";
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")) return "🖼️";
+            if (fileName.endsWith(".mp4")) return "🎥";
+            return "📎";
+        }
+
+        private String getFileNameFromUri(Uri uri) {
+            String result = uri.getLastPathSegment();
+            if (result != null && result.contains("/")) {
+                result = result.substring(result.lastIndexOf("/") + 1);
+            }
+            return result != null ? result : "Anexo";
+        }
+
         private void abrirArquivo(Uri uri) {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 String caminho = uri.toString();
-
-                // Define tipo do arquivo
-                String tipo = "*/*";
-                if (caminho.endsWith(".pdf")) tipo = "application/pdf";
-                else if (caminho.endsWith(".doc") || caminho.endsWith(".docx")) tipo = "application/msword";
-                else if (caminho.endsWith(".xls") || caminho.endsWith(".xlsx")) tipo = "application/vnd.ms-excel";
-                else if (caminho.endsWith(".jpg") || caminho.endsWith(".jpeg")) tipo = "image/jpeg";
-                else if (caminho.endsWith(".png")) tipo = "image/png";
+                String tipo = getMimeType(caminho);
 
                 intent.setDataAndType(uri, tipo);
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                // Verificar se há app disponível para abrir o arquivo
                 if (intent.resolveActivity(context.getPackageManager()) != null) {
                     context.startActivity(Intent.createChooser(intent, "Abrir arquivo com"));
                 } else {
@@ -146,6 +190,16 @@ public class DespesaAdapter extends RecyclerView.Adapter<DespesaAdapter.DespesaV
             } catch (Exception e) {
                 Toast.makeText(context, "Erro ao abrir arquivo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
+        }
+
+        private String getMimeType(String caminho) {
+            if (caminho.endsWith(".pdf")) return "application/pdf";
+            if (caminho.endsWith(".doc") || caminho.endsWith(".docx")) return "application/msword";
+            if (caminho.endsWith(".xls") || caminho.endsWith(".xlsx")) return "application/vnd.ms-excel";
+            if (caminho.endsWith(".jpg") || caminho.endsWith(".jpeg")) return "image/jpeg";
+            if (caminho.endsWith(".png")) return "image/png";
+            if (caminho.endsWith(".mp4")) return "video/mp4";
+            return "*/*";
         }
     }
 }

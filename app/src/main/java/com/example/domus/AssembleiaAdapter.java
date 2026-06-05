@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,7 +19,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.AssembleiaViewHolder> {
 
@@ -28,7 +31,8 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
     private final OnExcluirClickListener excluirListener;
     private final OnEditarClickListener editarListener;
     private final Context context;
-    private final String tipoUsuario; // Novo campo para controlar o tipo de usuário
+    private final String tipoUsuario;
+    private int expandedPosition = -1;
 
     public interface OnVisualizarClickListener {
         void onVisualizar(JSONObject assembleia);
@@ -42,7 +46,6 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
         void onEditar(JSONObject assembleia);
     }
 
-    // Construtor atualizado para receber tipoUsuario
     public AssembleiaAdapter(Context context, List<JSONObject> lista,
                              OnVisualizarClickListener visualizarListener,
                              OnExcluirClickListener excluirListener,
@@ -66,7 +69,8 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
     @Override
     public void onBindViewHolder(@NonNull AssembleiaViewHolder holder, int position) {
         JSONObject assembleia = lista.get(position);
-        holder.bind(assembleia);
+        boolean isExpanded = position == expandedPosition;
+        holder.bind(assembleia, isExpanded, position);
     }
 
     @Override
@@ -76,9 +80,9 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
 
     class AssembleiaViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvDataHora, tvAssunto, tvLocal, tvDescricao, btnMostrarAnexos;
+        TextView tvDataHora, tvAssunto, tvLocal, tvDescricao, tvAnexosLabel, tvExpandir;
         LinearLayout layoutExpandido, layoutAnexos;
-        ImageButton btnExcluir, btnEditar;
+        Button btnExcluir, btnEditar;
 
         public AssembleiaViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -86,18 +90,31 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
             tvAssunto = itemView.findViewById(R.id.tvAssunto);
             tvLocal = itemView.findViewById(R.id.tvLocal);
             tvDescricao = itemView.findViewById(R.id.tvDescricao);
-            btnMostrarAnexos = itemView.findViewById(R.id.btnMostrarAnexos);
+            tvAnexosLabel = itemView.findViewById(R.id.tvAnexosLabel);
+            tvExpandir = itemView.findViewById(R.id.tvExpandir);
             layoutExpandido = itemView.findViewById(R.id.layoutExpandido);
             layoutAnexos = itemView.findViewById(R.id.layoutAnexos);
             btnExcluir = itemView.findViewById(R.id.btnExcluir);
             btnEditar = itemView.findViewById(R.id.btnEditar);
         }
 
-        void bind(JSONObject assembleia) {
-            tvDataHora.setText(assembleia.optString("datahora", ""));
-            tvAssunto.setText(assembleia.optString("assunto", ""));
-            tvLocal.setText("Local: " + assembleia.optString("local", ""));
-            tvDescricao.setText("Descrição: " + assembleia.optString("descricao", ""));
+        void bind(JSONObject assembleia, boolean isExpanded, int position) {
+            // Data/Hora formatada
+            String dataHora = assembleia.optString("datahora", "");
+            String dataFormatada = formatarDataHora(dataHora);
+            tvDataHora.setText("📅 " + dataFormatada);
+
+            // Assunto
+            String assunto = assembleia.optString("assunto", "");
+            tvAssunto.setText(assunto.isEmpty() ? "Assembleia" : assunto);
+
+            // Local
+            String local = assembleia.optString("local", "");
+            tvLocal.setText(local.isEmpty() ? "📍 Local: Não informado" : "📍 Local: " + local);
+
+            // Descrição
+            String descricao = assembleia.optString("descricao", "");
+            tvDescricao.setText(descricao.isEmpty() ? "📝 Descrição: Sem descrição" : "📝 Descrição: " + descricao);
 
             // Controlar visibilidade dos botões baseado no tipo de usuário
             if ("morador".equalsIgnoreCase(tipoUsuario)) {
@@ -108,15 +125,73 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
                 btnEditar.setVisibility(View.VISIBLE);
             }
 
-            layoutExpandido.setVisibility(View.GONE);
-            layoutAnexos.setVisibility(View.GONE);
-            btnMostrarAnexos.setVisibility(View.GONE);
+            // Atualizar ícone de expandir
+            tvExpandir.setText(isExpanded ? "▲" : "▼");
+            layoutExpandido.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
-            // Ao clicar no assunto, mostrar/ocultar detalhes
+            // Se estiver expandido, mostrar anexos
+            if (isExpanded) {
+                // Configurar anexos
+                layoutAnexos.removeAllViews();
+
+                try {
+                    JSONArray anexos = new JSONArray(assembleia.optString("anexos", "[]"));
+                    if (anexos.length() > 0) {
+                        tvAnexosLabel.setVisibility(View.VISIBLE);
+                        layoutAnexos.setVisibility(View.VISIBLE);
+
+                        for (int i = 0; i < anexos.length(); i++) {
+                            String caminho = anexos.getString(i);
+                            String nomeArquivo = getFileNameFromPath(caminho);
+                            String icone = getIconeArquivo(nomeArquivo);
+
+                            TextView tvAnexo = new TextView(context);
+                            tvAnexo.setText(icone + " " + nomeArquivo);
+                            tvAnexo.setTextSize(13);
+                            tvAnexo.setTextColor(0xFF2196F3);
+                            tvAnexo.setPadding(8, 8, 8, 8);
+                            tvAnexo.setBackgroundResource(android.R.drawable.list_selector_background);
+                            tvAnexo.setOnClickListener(v -> abrirArquivo(caminho));
+                            layoutAnexos.addView(tvAnexo);
+                        }
+                    } else {
+                        tvAnexosLabel.setVisibility(View.GONE);
+                        layoutAnexos.setVisibility(View.GONE);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    tvAnexosLabel.setVisibility(View.GONE);
+                    layoutAnexos.setVisibility(View.GONE);
+                }
+            } else {
+                tvAnexosLabel.setVisibility(View.GONE);
+                layoutAnexos.setVisibility(View.GONE);
+            }
+
+            // Clique para expandir/recolher
             tvAssunto.setOnClickListener(v -> {
-                if (layoutExpandido.getVisibility() == View.GONE)
-                    layoutExpandido.setVisibility(View.VISIBLE);
-                else layoutExpandido.setVisibility(View.GONE);
+                if (expandedPosition == position) {
+                    expandedPosition = -1;
+                    notifyItemChanged(position);
+                } else {
+                    int oldPosition = expandedPosition;
+                    expandedPosition = position;
+                    if (oldPosition != -1) notifyItemChanged(oldPosition);
+                    notifyItemChanged(position);
+                }
+            });
+
+            // Clique no ícone de expandir
+            tvExpandir.setOnClickListener(v -> {
+                if (expandedPosition == position) {
+                    expandedPosition = -1;
+                    notifyItemChanged(position);
+                } else {
+                    int oldPosition = expandedPosition;
+                    expandedPosition = position;
+                    if (oldPosition != -1) notifyItemChanged(oldPosition);
+                    notifyItemChanged(position);
+                }
             });
 
             // Clique em excluir
@@ -132,32 +207,39 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
                     editarListener.onEditar(assembleia);
                 }
             });
+        }
 
-            // Mostrar anexos
+        private String formatarDataHora(String dataHoraStr) {
             try {
-                JSONArray anexos = new JSONArray(assembleia.optString("anexos", "[]"));
-                if (anexos.length() > 0) {
-                    btnMostrarAnexos.setVisibility(View.VISIBLE);
-                    btnMostrarAnexos.setOnClickListener(v -> {
-                        layoutAnexos.removeAllViews();
-                        layoutAnexos.setVisibility(View.VISIBLE);
-                        for (int i = 0; i < anexos.length(); i++) {
-                            try {
-                                String caminho = anexos.getString(i);
-                                TextView tvAnexo = new TextView(context);
-                                tvAnexo.setText(new File(Uri.parse(caminho).getPath()).getName());
-                                tvAnexo.setTextColor(0xFF1976D2);
-                                tvAnexo.setPadding(8, 8, 8, 8);
-                                tvAnexo.setOnClickListener(view -> abrirArquivo(caminho));
-                                layoutAnexos.addView(tvAnexo);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    });
-                }
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                Date date = inputFormat.parse(dataHoraStr);
+                return outputFormat.format(date);
             } catch (Exception e) {
-                e.printStackTrace();
+                return dataHoraStr;
+            }
+        }
+
+        private String getIconeArquivo(String fileName) {
+            if (fileName == null) return "📎";
+            if (fileName.endsWith(".pdf")) return "📄";
+            if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) return "📝";
+            if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return "📊";
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")) return "🖼️";
+            if (fileName.endsWith(".mp4")) return "🎥";
+            return "📎";
+        }
+
+        private String getFileNameFromPath(String path) {
+            try {
+                Uri uri = Uri.parse(path);
+                String result = uri.getLastPathSegment();
+                if (result != null && result.contains("/")) {
+                    result = result.substring(result.lastIndexOf("/") + 1);
+                }
+                return result != null ? result : "Anexo";
+            } catch (Exception e) {
+                return "Anexo";
             }
         }
 
@@ -171,18 +253,13 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
                             context.getPackageName() + ".provider",
                             file);
 
-                    String tipo = "*/*";
-                    if (file.getName().endsWith(".pdf")) tipo = "application/pdf";
-                    else if (file.getName().endsWith(".doc") || file.getName().endsWith(".docx")) tipo = "application/msword";
-                    else if (file.getName().endsWith(".xls") || file.getName().endsWith(".xlsx")) tipo = "application/vnd.ms-excel";
-                    else if (file.getName().endsWith(".jpg") || file.getName().endsWith(".jpeg")) tipo = "image/jpeg";
-                    else if (file.getName().endsWith(".png")) tipo = "image/png";
+                    String tipo = getMimeType(file.getName());
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(fileUri, tipo);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                    // Verificar se há app disponível para abrir o arquivo
                     if (intent.resolveActivity(context.getPackageManager()) != null) {
                         context.startActivity(intent);
                     } else {
@@ -195,6 +272,16 @@ public class AssembleiaAdapter extends RecyclerView.Adapter<AssembleiaAdapter.As
                 Toast.makeText(context, "Erro ao abrir arquivo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+        }
+
+        private String getMimeType(String fileName) {
+            if (fileName.endsWith(".pdf")) return "application/pdf";
+            if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) return "application/msword";
+            if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return "application/vnd.ms-excel";
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) return "image/jpeg";
+            if (fileName.endsWith(".png")) return "image/png";
+            if (fileName.endsWith(".mp4")) return "video/mp4";
+            return "*/*";
         }
     }
 }

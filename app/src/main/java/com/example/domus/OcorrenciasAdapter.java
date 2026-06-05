@@ -22,7 +22,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.ViewHolder> {
 
@@ -48,15 +51,17 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
 
         holder.bind(ocorrencia, isExpanded);
 
-        holder.textTipo.setOnClickListener(v -> {
+        // Clique no card para expandir/recolher
+        holder.layoutPrincipal.setOnClickListener(v -> {
             if (expandedPosition == position) {
                 expandedPosition = -1;
+                notifyItemChanged(position);
             } else {
                 int oldPosition = expandedPosition;
                 expandedPosition = position;
-                notifyItemChanged(oldPosition);
+                if (oldPosition != -1) notifyItemChanged(oldPosition);
+                notifyItemChanged(position);
             }
-            notifyItemChanged(position);
         });
     }
 
@@ -67,7 +72,8 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView textTipo, textDataHora;
+        LinearLayout layoutPrincipal;
+        TextView textTipo, textStatus, textDataHora;
         TextView textDescricaoTitulo, textDescricaoExpandida;
         TextView textEnvolvidosTitulo, textEnvolvidos;
         TextView textAnexosTitulo;
@@ -76,7 +82,9 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            layoutPrincipal = itemView.findViewById(R.id.layoutOcorrenciaItem);
             textTipo = itemView.findViewById(R.id.textTipoOcorrencia);
+            textStatus = itemView.findViewById(R.id.textStatusOcorrencia);
             textDataHora = itemView.findViewById(R.id.textDataHoraOcorrencia);
             textDescricaoTitulo = itemView.findViewById(R.id.textDescricaoTitulo);
             textDescricaoExpandida = itemView.findViewById(R.id.textDescricaoExpandida);
@@ -94,14 +102,23 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
             try {
                 Context context = itemView.getContext();
 
-                textTipo.setText(ocorrencia.optString("tipo"));
-                textDataHora.setText(ocorrencia.optString("datahora"));
+                // Tipo
+                String tipo = ocorrencia.optString("tipo", "Sem tipo");
+                textTipo.setText(tipo);
+
+                // Status
+                String status = ocorrencia.optString("status", "pendente");
+                textStatus.setText(status.toUpperCase());
+                atualizarCorStatus(status);
+
+                // Data/Hora formatada
+                String dataHora = ocorrencia.optString("datahora", "");
+                String dataFormatada = formatarDataHora(dataHora);
+                textDataHora.setText("📅 " + dataFormatada);
 
                 // Descrição
                 String descricao = ocorrencia.optString("descricao", "");
-                textDescricaoExpandida.setText(descricao);
-                textDescricaoTitulo.setVisibility(isExpanded && !descricao.isEmpty() ? View.VISIBLE : View.GONE);
-                textDescricaoExpandida.setVisibility(isExpanded && !descricao.isEmpty() ? View.VISIBLE : View.GONE);
+                textDescricaoExpandida.setText(descricao.isEmpty() ? "Sem descrição" : descricao);
 
                 // Envolvidos
                 JSONArray envolvidosArray = new JSONArray(ocorrencia.optString("envolvidos", "[]"));
@@ -130,16 +147,17 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
                         String originalUriStr = anexosArray.getString(i);
                         Uri originalUri = Uri.parse(originalUriStr);
 
-                        // Nome amigável do arquivo
                         String fileName = "Anexo_" + (i + 1) + "_" + new File(originalUri.getPath()).getName();
-
                         File internalFile = copyToInternal(context, originalUri, fileName);
+
                         if (internalFile != null) {
                             TextView anexItem = new TextView(context);
-                            anexItem.setText("- " + internalFile.getName());
-                            anexItem.setTextSize(14);
-                            anexItem.setTextColor(0xFF0000FF);
+                            String icone = getIconeArquivo(internalFile.getName());
+                            anexItem.setText(icone + " " + internalFile.getName());
+                            anexItem.setTextSize(13);
+                            anexItem.setTextColor(0xFF2196F3);
                             anexItem.setPadding(8, 4, 8, 4);
+                            anexItem.setBackgroundResource(android.R.drawable.list_selector_background);
 
                             anexItem.setOnClickListener(v -> {
                                 try {
@@ -150,11 +168,9 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
                                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                     context.startActivity(Intent.createChooser(intent, "Abrir com"));
                                 } catch (ActivityNotFoundException e) {
-                                    Toast.makeText(context,
-                                            "Não há aplicativo disponível para abrir este arquivo.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, "Não há aplicativo disponível para abrir este arquivo.", Toast.LENGTH_SHORT).show();
                                 } catch (Exception e) {
-                                    Toast.makeText(context,
-                                            "Erro ao abrir anexo.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, "Erro ao abrir anexo.", Toast.LENGTH_SHORT).show();
                                     e.printStackTrace();
                                 }
                             });
@@ -167,17 +183,70 @@ public class OcorrenciasAdapter extends RecyclerView.Adapter<OcorrenciasAdapter.
                     layoutAnexos.setVisibility(View.GONE);
                 }
 
+                // Visibilidade dos elementos expandidos
+                textDescricaoTitulo.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+                textDescricaoExpandida.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
                 layoutBotoes.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
                 layoutExpandido.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+
+                // Configurar botões
+                buttonEditar.setOnClickListener(v -> {
+                    // Implementar edição
+                    Toast.makeText(context, "Editar ocorrência", Toast.LENGTH_SHORT).show();
+                });
+
+                buttonExcluir.setOnClickListener(v -> {
+                    // Implementar exclusão
+                    Toast.makeText(context, "Excluir ocorrência", Toast.LENGTH_SHORT).show();
+                });
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
+        private void atualizarCorStatus(String status) {
+            int cor;
+            switch (status.toLowerCase()) {
+                case "resolvido":
+                case "concluído":
+                    cor = 0xFF4CAF50; // Verde
+                    break;
+                case "em andamento":
+                case "processando":
+                    cor = 0xFFFF9800; // Laranja
+                    break;
+                default:
+                    cor = 0xFFF44336; // Vermelho
+                    break;
+            }
+            textStatus.setBackgroundColor(cor);
+        }
+
+        private String formatarDataHora(String dataHoraStr) {
+            try {
+                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                Date date = inputFormat.parse(dataHoraStr);
+                return outputFormat.format(date);
+            } catch (Exception e) {
+                return dataHoraStr;
+            }
+        }
+
+        private String getIconeArquivo(String fileName) {
+            if (fileName.endsWith(".pdf")) return "📄";
+            if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) return "📝";
+            if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return "📊";
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")) return "🖼️";
+            if (fileName.endsWith(".mp4")) return "🎥";
+            return "📎";
+        }
+
         private File copyToInternal(Context context, Uri uri, String fileName) {
             try {
                 File file = new File(context.getFilesDir(), fileName);
+                if (file.exists()) return file;
 
                 InputStream in = context.getContentResolver().openInputStream(uri);
                 if (in == null) return null;

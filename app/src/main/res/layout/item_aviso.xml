@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="20dp"
-    android:layout_marginEnd="20dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
     app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
@@ -17,96 +17,114 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Data/Hora -->
-        <TextView
-            android:id="@+id/tvDataHora"
-            android:layout_width="wrap_content"
+        <!-- Linha superior: Data/Hora e Assunto -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Data/Hora"
-            android:textSize="12sp"
-            android:textColor="#6B7280"
-            android:textStyle="bold"/>
+            android:orientation="vertical">
 
-        <!-- Assunto -->
-        <TextView
-            android:id="@+id/tvAssunto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Assunto"
-            android:textSize="16sp"
-            android:textColor="#1A1A2E"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp"/>
+            <TextView
+                android:id="@+id/tvDataHora"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Data/Hora"
+                android:textSize="12sp"
+                android:textColor="#6B7280"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvAssunto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Assunto"
+                android:textSize="16sp"
+                android:textColor="#1A1A2E"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
+
+        </LinearLayout>
+
+        <!-- Linha divisória -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
 
         <!-- Descrição -->
         <TextView
             android:id="@+id/tvDescricao"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Descrição"
             android:textSize="14sp"
             android:textColor="#374151"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginBottom="12dp"/>
 
         <!-- Anexos -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📎 Anexos:"
+            android:textSize="13sp"
+            android:textColor="#6B7280"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            android:id="@+id/tvAnexosLabel"/>
+
         <HorizontalScrollView
+            android:id="@+id/scrollAnexos"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:layout_marginTop="12dp"
-            android:scrollbars="none">
+            android:layout_marginBottom="12dp"
+            android:scrollbars="none"
+            android:visibility="gone">
 
             <LinearLayout
                 android:id="@+id/layoutAnexos"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"/>
-        </HorizontalScrollView>
 
-        <!-- Linha de separação -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:background="#E5E7EB"/>
+        </HorizontalScrollView>
 
         <!-- Botões -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:layout_marginTop="8dp"
+            android:gravity="end">
 
             <Button
                 android:id="@+id/btnEditar"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
                 android:text="Editar"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.03"
                 android:textAllCaps="false"
-                android:backgroundTint="#3B82F6"
+                android:backgroundTint="#2196F3"
                 android:textColor="#FFFFFF"
-                app:cornerRadius="6dp"/>
+                app:cornerRadius="8dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:layout_marginEnd="12dp"/>
 
             <Button
                 android:id="@+id/btnExcluir"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
                 android:text="Excluir"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.03"
                 android:textAllCaps="false"
-                android:backgroundTint="#EF4444"
+                android:backgroundTint="#F44336"
                 android:textColor="#FFFFFF"
-                app:cornerRadius="6dp"/>
-
+                app:cornerRadius="8dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"/>
         </LinearLayout>
 
     </LinearLayout>

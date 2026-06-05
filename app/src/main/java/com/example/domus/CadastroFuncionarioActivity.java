@@ -1,9 +1,13 @@
 package com.example.domus;
 
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -13,25 +17,31 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.example.domus.data.FuncionarioDAO;
+import com.example.domus.domain.model.Funcionario;
 
 public class CadastroFuncionarioActivity extends AppCompatActivity {
 
-    private EditText etNome, etRua, etNumero, etBairro, etCep, etCidade, etEstado, etPais, etTelefone, etEmail,
-            etRG, etCPF, etCargaHoraria, etTurno, etHoraEntrada, etHoraSaida;
+    private EditText etNome, etRua, etNumero, etBairro, etCep, etCidade, etEstado, etPais,
+            etTelefone, etEmail, etRG, etCPF, etCargaHoraria, etTurno,
+            etHoraEntrada, etHoraSaida, etCargo;
     private Button btnSalvar;
     private ImageView imageFuncionario;
     private Uri imagemSelecionadaUri;
-    private int indexEditando = -1;
+    private int funcionarioId = -1;
+    private FuncionarioDAO funcionarioDAO;
 
     private final ActivityResultLauncher<String> selecionarImagemLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
-                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    imagemSelecionadaUri = uri;
-                    imageFuncionario.setImageURI(uri);
+                    try {
+                        getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        imagemSelecionadaUri = uri;
+                        imageFuncionario.setImageURI(uri);
+                    } catch (SecurityException e) {
+                        imagemSelecionadaUri = uri;
+                        imageFuncionario.setImageURI(uri);
+                    }
                 }
             });
 
@@ -40,7 +50,9 @@ public class CadastroFuncionarioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro_funcionario);
 
-        // Campos
+        funcionarioDAO = new FuncionarioDAO(this);
+
+        // Inicializa campos
         etNome = findViewById(R.id.editNomeFuncionario);
         etRua = findViewById(R.id.editRuaFuncionario);
         etNumero = findViewById(R.id.editNumeroFuncionario);
@@ -51,154 +63,281 @@ public class CadastroFuncionarioActivity extends AppCompatActivity {
         etPais = findViewById(R.id.editPaisFuncionario);
         etTelefone = findViewById(R.id.editTelefoneFuncionario);
         etEmail = findViewById(R.id.editEmailFuncionario);
-
         etRG = findViewById(R.id.editRGFuncionario);
         etCPF = findViewById(R.id.editCPFFuncionario);
         etCargaHoraria = findViewById(R.id.editCargaHoraria);
         etTurno = findViewById(R.id.editTurno);
         etHoraEntrada = findViewById(R.id.editHoraEntrada);
         etHoraSaida = findViewById(R.id.editHoraSaida);
+        etCargo = findViewById(R.id.editCargoFuncionario);
 
         btnSalvar = findViewById(R.id.buttonSalvarFuncionario);
         imageFuncionario = findViewById(R.id.imageFuncionario);
 
-        // Selecionar imagem
+        // Configurar foco e prevenção de autofill para o telefone
+        configurarCampos();
+
         imageFuncionario.setOnClickListener(v -> selecionarImagemLauncher.launch("image/*"));
 
-        indexEditando = getIntent().getIntExtra("index", -1);
-        if (indexEditando >= 0) {
-            carregarFuncionario(indexEditando);
+        funcionarioId = getIntent().getIntExtra("funcionario_id", -1);
+        if (funcionarioId > 0) {
+            carregarFuncionario(funcionarioId);
         }
 
         btnSalvar.setOnClickListener(v -> salvarFuncionario());
     }
 
-    private void carregarFuncionario(int index) {
-        SharedPreferences prefs = getSharedPreferences("funcionarios", MODE_PRIVATE);
-        String json = prefs.getString("lista", "[]");
-        try {
-            JSONArray array = new JSONArray(json);
-            JSONObject f = array.getJSONObject(index);
+    private void configurarCampos() {
+        // Desabilitar autofill para o campo telefone (API 26+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            etTelefone.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+        }
 
-            etNome.setText(f.getString("nome"));
-            etRua.setText(f.optString("rua", ""));
-            etNumero.setText(f.optString("numero", ""));
-            etBairro.setText(f.optString("bairro", ""));
-            etCep.setText(f.optString("cep", ""));
-            etCidade.setText(f.optString("cidade", ""));
-            etEstado.setText(f.optString("estado", ""));
-            etPais.setText(f.optString("pais", ""));
-            etTelefone.setText(f.optString("telefone", ""));
-            etEmail.setText(f.optString("email", ""));
+        // Remover suggestões automáticas
+        etTelefone.setAutofillHints("");
 
-            etRG.setText(f.getString("rg"));
-            etCPF.setText(f.getString("cpf"));
-            etCargaHoraria.setText(f.getString("cargaHoraria"));
-            etTurno.setText(f.getString("turno"));
-            etHoraEntrada.setText(f.getString("horaEntrada"));
-            etHoraSaida.setText(f.getString("horaSaida"));
-
-            String uriStr = f.optString("imagemUri", "");
-            if (!uriStr.isEmpty()) {
-                imagemSelecionadaUri = Uri.parse(uriStr);
-                imageFuncionario.setImageURI(imagemSelecionadaUri);
+        // Configurar ação do teclado para o telefone ir para o próximo campo
+        etTelefone.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etEmail.requestFocus();
+                etEmail.performClick();
+                return true;
             }
+            return false;
+        });
 
-        } catch (JSONException e) {
-            e.printStackTrace();
+        // Configurar ação do teclado para todos os campos
+        etNome.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etRua.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etRua.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etNumero.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etNumero.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etBairro.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etBairro.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etCep.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etCep.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etCidade.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etCidade.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etEstado.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etEstado.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etPais.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etPais.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etTelefone.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etTelefone.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etEmail.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etEmail.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etRG.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etRG.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etCPF.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etCPF.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etCargo.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etCargo.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etCargaHoraria.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etCargaHoraria.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etTurno.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etTurno.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etHoraEntrada.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etHoraEntrada.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                etHoraSaida.requestFocus();
+                return true;
+            }
+            return false;
+        });
+
+        etHoraSaida.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                salvarFuncionario();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void carregarFuncionario(int id) {
+        Funcionario f = funcionarioDAO.buscarPorId(id);
+        if (f != null) {
+            etNome.setText(f.getNome());
+            etRua.setText(f.getRua());
+            etNumero.setText(f.getNumero());
+            etBairro.setText(f.getBairro());
+            etCep.setText(f.getCep());
+            etCidade.setText(f.getCidade());
+            etEstado.setText(f.getEstado());
+            etPais.setText(f.getPais());
+            etTelefone.setText(f.getTelefone());
+            etEmail.setText(f.getEmail());
+            etRG.setText(f.getRg());
+            etCPF.setText(f.getCpf());
+            etCargaHoraria.setText(f.getCargaHoraria());
+            etTurno.setText(f.getTurno());
+            etHoraEntrada.setText(f.getHoraEntrada());
+            etHoraSaida.setText(f.getHoraSaida());
+            etCargo.setText(f.getCargo());
+
+            if (f.getImagemUri() != null && !f.getImagemUri().isEmpty()) {
+                try {
+                    imagemSelecionadaUri = Uri.parse(f.getImagemUri());
+                    imageFuncionario.setImageURI(imagemSelecionadaUri);
+                } catch (Exception e) {
+                    imageFuncionario.setImageResource(android.R.drawable.ic_menu_camera);
+                }
+            }
         }
     }
 
     private void salvarFuncionario() {
         String nome = etNome.getText().toString().trim();
 
-        if (nome.isEmpty() || imagemSelecionadaUri == null) {
-            Toast.makeText(this, "Preencha o nome e selecione uma imagem!", Toast.LENGTH_SHORT).show();
+        if (nome.isEmpty()) {
+            Toast.makeText(this, "Preencha o nome do funcionário!", Toast.LENGTH_SHORT).show();
+            etNome.requestFocus();
             return;
         }
 
-        // Outros campos são opcionais
-        String rua = etRua.getText().toString().trim();
-        String numero = etNumero.getText().toString().trim();
-        String bairro = etBairro.getText().toString().trim();
-        String cep = etCep.getText().toString().trim();
-        String cidade = etCidade.getText().toString().trim();
-        String estado = etEstado.getText().toString().trim();
-        String pais = etPais.getText().toString().trim();
-        String telefone = etTelefone.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String rg = etRG.getText().toString().trim();
-        String cpf = etCPF.getText().toString().trim();
-        String cargaHoraria = etCargaHoraria.getText().toString().trim();
-        String turno = etTurno.getText().toString().trim();
-        String horaEntrada = etHoraEntrada.getText().toString().trim();
-        String horaSaida = etHoraSaida.getText().toString().trim();
+        Funcionario funcionario = new Funcionario();
+        funcionario.setId(funcionarioId);
+        funcionario.setNome(nome);
+        funcionario.setRua(etRua.getText().toString().trim());
+        funcionario.setNumero(etNumero.getText().toString().trim());
+        funcionario.setBairro(etBairro.getText().toString().trim());
+        funcionario.setCep(etCep.getText().toString().trim());
+        funcionario.setCidade(etCidade.getText().toString().trim());
+        funcionario.setEstado(etEstado.getText().toString().trim());
+        funcionario.setPais(etPais.getText().toString().trim());
+        funcionario.setTelefone(etTelefone.getText().toString().trim());
+        funcionario.setEmail(etEmail.getText().toString().trim());
+        funcionario.setRg(etRG.getText().toString().trim());
+        funcionario.setCpf(etCPF.getText().toString().trim());
+        funcionario.setCargaHoraria(etCargaHoraria.getText().toString().trim());
+        funcionario.setTurno(etTurno.getText().toString().trim());
+        funcionario.setHoraEntrada(etHoraEntrada.getText().toString().trim());
+        funcionario.setHoraSaida(etHoraSaida.getText().toString().trim());
+        funcionario.setCargo(etCargo.getText().toString().trim());
 
-        SharedPreferences prefs = getSharedPreferences("funcionarios", MODE_PRIVATE);
-        String json = prefs.getString("lista", "[]");
+        if (imagemSelecionadaUri != null) {
+            funcionario.setImagemUri(imagemSelecionadaUri.toString());
+        }
 
-        try {
-            JSONArray array = new JSONArray(json);
-            JSONObject f = new JSONObject();
+        boolean sucesso;
+        if (funcionarioId > 0) {
+            sucesso = funcionarioDAO.atualizar(funcionario) > 0;
+        } else {
+            sucesso = funcionarioDAO.inserir(funcionario) > 0;
+        }
 
-            int id = indexEditando >= 0 ? getIdExistente(indexEditando) : gerarNovoId();
-            f.put("id", id);
-            f.put("nome", nome);
-            f.put("rua", rua);
-            f.put("numero", numero);
-            f.put("bairro", bairro);
-            f.put("cep", cep);
-            f.put("cidade", cidade);
-            f.put("estado", estado);
-            f.put("pais", pais);
-            f.put("telefone", telefone);
-            f.put("email", email);
-            f.put("rg", rg);
-            f.put("cpf", cpf);
-            f.put("cargaHoraria", cargaHoraria);
-            f.put("turno", turno);
-            f.put("horaEntrada", horaEntrada);
-            f.put("horaSaida", horaSaida);
-            f.put("imagemUri", imagemSelecionadaUri.toString());
-
-            if (indexEditando >= 0) {
-                array.put(indexEditando, f);
-            } else {
-                array.put(f);
-            }
-
-            prefs.edit().putString("lista", array.toString()).apply();
-            Toast.makeText(this, "Funcionário salvo!", Toast.LENGTH_SHORT).show();
+        if (sucesso) {
+            Toast.makeText(this, "Funcionário salvo com sucesso!", Toast.LENGTH_SHORT).show();
             finish();
-
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } else {
+            Toast.makeText(this, "Erro ao salvar funcionário!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private int gerarNovoId() {
-        SharedPreferences prefs = getSharedPreferences("funcionarios", MODE_PRIVATE);
-        String json = prefs.getString("lista", "[]");
-        int maxId = 0;
-        try {
-            JSONArray array = new JSONArray(json);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject f = array.getJSONObject(i);
-                int fid = f.getInt("id");
-                if (fid > maxId) maxId = fid;
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return maxId + 1;
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && funcionarioId == -1) {
+            // Só esconde o teclado se for novo cadastro
+            hideKeyboard();
+        }
     }
 
-    private int getIdExistente(int index) {
-        SharedPreferences prefs = getSharedPreferences("funcionarios", MODE_PRIVATE);
-        String json = prefs.getString("lista", "[]");
-        try {
-            JSONArray array = new JSONArray(json);
-            JSONObject f = array.getJSONObject(index);
-            return f.getInt("id");
-        } catch (Exception e) { e.printStackTrace(); }
-        return -1;
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

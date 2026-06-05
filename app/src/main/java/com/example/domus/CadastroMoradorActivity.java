@@ -87,16 +87,15 @@ public class CadastroMoradorActivity extends AppCompatActivity {
                     editQuadra.setText(morador.optString("quadra", ""));
                     editLote.setText(morador.optString("lote", ""));
 
-                    // Preenche a foto - agora usando o caminho salvo
+                    // Preenche a foto
                     String imagePath = morador.optString("foto", "");
                     if (!imagePath.isEmpty()) {
                         try {
-                            // Carregar a imagem do caminho salvo
                             Uri loadedUri = BackupUtil.loadImageFromInternalStorage(this, imagePath);
                             if (loadedUri != null) {
                                 fotoUri = loadedUri;
                                 imageMorador.setImageURI(loadedUri);
-                                savedImagePath = imagePath; // Manter referência ao caminho
+                                savedImagePath = imagePath;
                             } else {
                                 imageMorador.setImageResource(android.R.drawable.ic_menu_camera);
                             }
@@ -143,7 +142,7 @@ public class CadastroMoradorActivity extends AppCompatActivity {
         String quadra = editQuadra.getText().toString().trim();
         String lote = editLote.getText().toString().trim();
 
-        // Validação apenas para foto, nome e CPF (campos obrigatórios)
+        // Validação
         if (fotoUri == null) {
             Toast.makeText(this, "Selecione uma foto!", Toast.LENGTH_SHORT).show();
             return;
@@ -167,35 +166,31 @@ public class CadastroMoradorActivity extends AppCompatActivity {
                 return;
             }
 
-            JSONObject morador = new JSONObject();
-            morador.put("nome", nome);
-            morador.put("cpf", cpf);
-
-            // Campos opcionais - só adiciona se não estiverem vazios
-            if (!email.isEmpty()) morador.put("email", email);
-            if (!rua.isEmpty()) morador.put("rua", rua);
-            if (!numero.isEmpty()) morador.put("numero", numero);
-            if (!telefone.isEmpty()) morador.put("telefone", telefone);
-            if (!quadra.isEmpty()) morador.put("quadra", quadra);
-            if (!lote.isEmpty()) morador.put("lote", lote);
-
-            // Salvar o caminho da imagem em vez da URI temporária
-            morador.put("foto", imagePath);
-
+            // CORRIGIDO: Buscar o morador antigo usando a lista em vez de buscarPorCodigo
+            String oldImagePath = null;
             if (editarCod != null) {
-                // Antes de atualizar, excluir a imagem antiga se existir
-                JSONObject moradorAntigo = moradorDAO.buscarPorCodigo(editarCod);
-                if (moradorAntigo != null) {
-                    String oldImagePath = moradorAntigo.optString("foto", "");
-                    if (!oldImagePath.isEmpty() && !oldImagePath.equals(imagePath)) {
-                        BackupUtil.deleteImageFile(oldImagePath);
+                JSONArray lista = moradorDAO.getListaMoradores();
+                for (int i = 0; i < lista.length(); i++) {
+                    JSONObject morador = lista.getJSONObject(i);
+                    if (morador.optString("cod").equals(editarCod)) {
+                        oldImagePath = morador.optString("foto", "");
+                        break;
                     }
                 }
+            }
 
-                morador.put("cod", editarCod);
-                boolean sucesso = moradorDAO.atualizarMorador(editarCod, morador);
+            // Se tem imagem antiga e é diferente da nova, deletar
+            if (oldImagePath != null && !oldImagePath.isEmpty() && !oldImagePath.equals(imagePath)) {
+                BackupUtil.deleteImageFile(oldImagePath);
+            }
+
+            if (editarCod != null) {
+                // Atualizar morador existente
+                boolean sucesso = moradorDAO.atualizarMoradorCompleto(editarCod, nome, cpf, email,
+                        rua, numero, telefone, quadra, lote, imagePath);
                 if (sucesso) {
                     Toast.makeText(this, "Morador atualizado!", Toast.LENGTH_SHORT).show();
+                    finish();
                 } else {
                     Toast.makeText(this, "Erro ao atualizar morador!", Toast.LENGTH_SHORT).show();
                 }
@@ -203,16 +198,16 @@ public class CadastroMoradorActivity extends AppCompatActivity {
                 // Novo morador
                 int novoCod = gerarNovoCodigo();
                 String codStr = String.format("%02d", novoCod);
-                morador.put("cod", codStr);
-                boolean sucesso = moradorDAO.inserirMorador(morador);
+                boolean sucesso = moradorDAO.inserirMoradorCompleto(codStr, nome, cpf, email,
+                        rua, numero, telefone, quadra, lote, imagePath);
                 if (sucesso) {
                     Toast.makeText(this, "Morador cadastrado!", Toast.LENGTH_SHORT).show();
+                    finish();
                 } else {
                     Toast.makeText(this, "Erro ao cadastrar morador!", Toast.LENGTH_SHORT).show();
                 }
             }
 
-            finish();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Erro ao salvar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -222,17 +217,8 @@ public class CadastroMoradorActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Se não salvou e há uma imagem temporária, limpar
         if (savedImagePath == null && fotoUri != null) {
-            try {
-                String uriString = fotoUri.toString();
-                if (uriString.contains("cache") || uriString.contains("temp")) {
-                    // É um arquivo temporário, podemos tentar excluir
-                    // (implementação depende da sua estrutura)
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // Limpeza se necessário
         }
     }
 }
