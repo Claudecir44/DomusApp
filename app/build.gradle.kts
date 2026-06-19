@@ -18,7 +18,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // 🔽 CONFIGURAÇÃO DOS FLAVORS
     flavorDimensions += "perfil"
 
     productFlavors {
@@ -74,7 +73,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.activity:activity-ktx:1.8.0")
+    implementation("androidx.activity:activity-ktx:1.8.0") // versão compatível com SDK 34
     implementation("androidx.fragment:fragment-ktx:1.6.1")
 
     // Lifecycle & Coroutines
