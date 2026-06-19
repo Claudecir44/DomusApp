@@ -10,7 +10,7 @@ import com.cjstudio.condominio_sociedade_morro_grande.domain.model.ButtonVisibil
 
 public class DashBoardViewModel extends AndroidViewModel {
 
-    private final MutableLiveData<com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState> uiState = new MutableLiveData<>();
+    private final MutableLiveData<DashBoardUiState> uiState = new MutableLiveData<>();
     private final MutableLiveData<NavigationEvent> navigationEvent = new MutableLiveData<>();
 
     private String currentTipoUsuario;
@@ -18,10 +18,10 @@ public class DashBoardViewModel extends AndroidViewModel {
 
     public DashBoardViewModel(Application application) {
         super(application);
-        uiState.setValue(com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState.loading());
+        uiState.setValue(DashBoardUiState.loading());
     }
 
-    public LiveData<com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState> getUiState() {
+    public LiveData<DashBoardUiState> getUiState() {
         return uiState;
     }
 
@@ -33,7 +33,6 @@ public class DashBoardViewModel extends AndroidViewModel {
         this.currentTipoUsuario = tipoUsuario;
         this.currentMoradorNome = moradorNome;
 
-        // Determina visibilidade dos botões com base no perfil (via BuildConfig)
         ButtonVisibility visibility = getButtonVisibility();
 
         uiState.setValue(com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState.ready(visibility, tipoUsuario, moradorNome));
@@ -42,10 +41,10 @@ public class DashBoardViewModel extends AndroidViewModel {
     private ButtonVisibility getButtonVisibility() {
         ButtonVisibility visibility = new ButtonVisibility();
 
-        // Admin tem acesso a tudo
         boolean isAdmin = "admin".equals(currentTipoUsuario);
+        boolean isMorador = "morador".equals(currentTipoUsuario);
 
-        // Botões visíveis para admin
+        // ========== BOTÕES EXCLUSIVOS DE ADMIN ==========
         visibility.setVisible("cadastro", isAdmin);
         visibility.setVisible("lista", isAdmin);
         visibility.setVisible("backup", isAdmin);
@@ -55,16 +54,14 @@ public class DashBoardViewModel extends AndroidViewModel {
         visibility.setVisible("despesas", isAdmin);
         visibility.setVisible("administradores", isAdmin);
         visibility.setVisible("avisos", isAdmin);
-        visibility.setVisible("listaAssembleias", isAdmin);
-        visibility.setVisible("listaDespesas", isAdmin);
-        visibility.setVisible("listaAvisos", isAdmin);
 
-        // Botões visíveis para morador (apenas lista, ocorrências, etc.)
-        boolean isMorador = "morador".equals(currentTipoUsuario);
-        visibility.setVisible("ocorrencias", isMorador || isAdmin);
-        visibility.setVisible("listaAvisos", isMorador || isAdmin);
-        visibility.setVisible("listaAssembleias", isMorador || isAdmin);
-        visibility.setVisible("listaDespesas", isMorador || isAdmin);
+        // 🔥 CORREÇÃO: Registro de Ocorrências – APENAS ADMIN
+        visibility.setVisible("ocorrencias", isAdmin);
+
+        // ========== BOTÕES PARA MORADOR (e também admin) ==========
+        visibility.setVisible("listaAssembleias", isAdmin || isMorador);
+        visibility.setVisible("listaDespesas", isAdmin || isMorador);
+        visibility.setVisible("listaAvisos", isAdmin || isMorador);
 
         return visibility;
     }
