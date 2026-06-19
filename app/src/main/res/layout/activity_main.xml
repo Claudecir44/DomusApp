@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F0F2F8"
-    android:gravity="center">
+    android:gravity="center"
+    tools:context=".MainActivity">
 
-    <!-- Logo centralizado -->
     <ImageView
         android:id="@+id/imageSplash"
         android:layout_width="150dp"
@@ -15,19 +16,17 @@
         android:contentDescription="Logo Domus"
         android:layout_marginBottom="24dp" />
 
-    <!-- Título do App -->
     <TextView
         android:id="@+id/textAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Domus"
+        android:text="@string/app_name"
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="#1A1A2E"
         android:gravity="center"
         android:layout_marginBottom="8dp" />
 
-    <!-- Subtítulo -->
     <TextView
         android:id="@+id/textSubtitle"
         android:layout_width="wrap_content"
@@ -37,7 +36,6 @@
         android:textColor="#6B7280"
         android:gravity="center" />
 
-    <!-- ProgressBar de carregamento -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="48dp"
@@ -45,20 +43,5 @@
         android:layout_marginTop="48dp"
         android:indeterminateTint="#6E747E"
         android:visibility="visible" />
-
-    <LinearLayout
-        android:id="@+id/layoutBotoes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp">
-
-        <!-- Seus botões existentes aqui -->
-        <!-- Eles serão estilizados conforme o padrão quando adicionados -->
-
-    </LinearLayout>
 
 </LinearLayout>

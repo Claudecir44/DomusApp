@@ -31,6 +31,7 @@
             android:gravity="center"
             android:layout_marginBottom="40dp"/>
 
+        <!-- Campo de Usuário (Quadra + Lote) -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -47,8 +48,8 @@
                 android:id="@+id/editUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:hint="Primeiro nome"
-                android:inputType="textPersonName"
+                android:hint="Quadra + Lote (ex: A10)"
+                android:inputType="text"
                 android:maxLines="1"
                 android:textSize="18sp"
                 android:textColor="#1A1A2E"
@@ -58,12 +59,12 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- TextView de Lembrete -->
+        <!-- TextView de Lembrete (atualizado) -->
         <TextView
             android:id="@+id/tvLembrete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ℹ️ Dica: Use letras minúsculas (ex: ana)"
+            android:text="ℹ️ Dica: Use a quadra + lote (ex: A10) e os 3 primeiros dígitos do CPF."
             android:textSize="12sp"
             android:textColor="#6B7280"
             android:paddingStart="12dp"
@@ -72,6 +73,7 @@
             android:paddingBottom="12dp"
             android:visibility="visible" />
 
+        <!-- Campo de Senha (3 primeiros dígitos do CPF) -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,13 +84,14 @@
             app:boxCornerRadiusBottomEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusTopStart="8dp">
+            app:boxCornerRadiusTopStart="8dp"
+            app:passwordToggleEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editSenha"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:hint="Senha (CPF)"
+                android:hint="3 primeiros dígitos do CPF"
                 android:inputType="numberPassword"
                 android:maxLines="1"
                 android:textSize="18sp"
@@ -99,6 +102,7 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Botão Entrar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEntrar"
             android:layout_width="match_parent"

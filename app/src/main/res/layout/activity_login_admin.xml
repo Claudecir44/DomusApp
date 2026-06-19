@@ -13,7 +13,6 @@
         android:padding="20dp"
         android:paddingBottom="24dp">
 
-        <!-- Card principal -->
         <LinearLayout
             android:id="@+id/cardLogin"
             android:layout_width="0dp"
@@ -26,7 +25,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Título -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -37,7 +35,7 @@
                 android:layout_marginBottom="24dp"
                 android:textColor="#1A1A2E"/>
 
-            <!-- Campos de Login -->
+            <!-- ===== LOGIN ===== -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -51,7 +49,7 @@
                 android:id="@+id/editLoginAdmin"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Usuário"
+                android:hint="Nome do administrador"
                 android:inputType="textPersonName"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -95,7 +93,7 @@
                 android:background="#E5E7EB"
                 android:layout_marginBottom="24dp"/>
 
-            <!-- Campos de Cadastro -->
+            <!-- ===== CADASTRO ===== -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,19 +103,26 @@
                 android:layout_marginBottom="12dp"
                 android:textColor="#1A1A2E" />
 
-            <TextView
+            <!-- Novo campo: EMAIL -->
+            <EditText
+                android:id="@+id/editCadastroEmail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="(Necessário senha master)"
-                android:textSize="12sp"
+                android:layout_height="44dp"
+                android:hint="E-mail (ex: admin@condominio.com)"
+                android:inputType="textEmailAddress"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:layout_marginBottom="12dp"
-                android:textColor="#9CA3AF" />
+                android:background="@drawable/edittext_background"
+                android:textSize="14sp"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#9CA3AF"/>
 
             <EditText
                 android:id="@+id/editCadastroAdmin"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Novo usuário"
+                android:hint="Nome do administrador"
                 android:inputType="textPersonName"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -131,7 +136,7 @@
                 android:id="@+id/editCadastroSenha"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Nova senha (6 dígitos numéricos)"
+                android:hint="Senha (6 dígitos numéricos)"
                 android:inputType="numberPassword"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"

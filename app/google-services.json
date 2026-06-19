@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "266000891617",
+    "project_id": "cond-sociedade-morro-grande",
+    "storage_bucket": "cond-sociedade-morro-grande.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266000891617:android:43a17d26ded14a43c281a0",
+        "android_client_info": {
+          "package_name": "com.cjstudio.condominio_sociedade_morro_grande"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ5H56JmzOX9hU0eiFUXuM9NBshhCD0gY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266000891617:android:5f394751cd90bdcac281a0",
+        "android_client_info": {
+          "package_name": "com.cjstudio.condominio_sociedade_morro_grande.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ5H56JmzOX9hU0eiFUXuM9NBshhCD0gY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266000891617:android:17f92125739e97c8c281a0",
+        "android_client_info": {
+          "package_name": "com.cjstudio.condominio_sociedade_morro_grande.morador"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ5H56JmzOX9hU0eiFUXuM9NBshhCD0gY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
