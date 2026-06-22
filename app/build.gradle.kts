@@ -3,22 +3,17 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 import java.util.Properties
         import java.io.FileInputStream
 
         android {
-            // =====================================================
-            // PACOTE CORRIGIDO para com.cjstudio.condominio_sociedade_morro_grande
-            // =====================================================
             namespace = "com.cjstudio.condominio_sociedade_morro_grande"
             compileSdk = 34
 
             defaultConfig {
-                // =====================================================
-                // APPLICATION ID CORRIGIDO
-                // =====================================================
                 applicationId = "com.cjstudio.condominio_sociedade_morro_grande"
                 minSdk = 24
                 targetSdk = 34
@@ -61,9 +56,6 @@ import java.util.Properties
                 viewBinding = true
             }
 
-            // =====================================================
-            // FLAVOR DIMENSION (obrigatório)
-            // =====================================================
             flavorDimensions += "version"
 
             productFlavors {
@@ -71,17 +63,19 @@ import java.util.Properties
                     dimension = "version"
                     applicationIdSuffix = ".admin"
                     versionNameSuffix = "-admin"
-                    resValue("string", "app_name", "Condomínio Admin")
+                    resValue("string", "app_name", "Admin")
+                    buildConfigField("String", "PERFIL", "\"admin\"")
                 }
                 create("morador") {
                     dimension = "version"
                     applicationIdSuffix = ".morador"
                     versionNameSuffix = "-morador"
-                    resValue("string", "app_name", "Condomínio Morador")
+                    resValue("string", "app_name", "Morador")
+                    buildConfigField("String", "PERFIL", "\"morador\"")
                 }
             }
 
-            packagingOptions {
+            packaging {
                 resources {
                     excludes += "/META-INF/{AL2.0,LGPL2.1}"
                     excludes += "META-INF/DEPENDENCIES"
@@ -137,9 +131,7 @@ dependencies {
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.8.1")
 
-    // =====================================================
-    // FIREBASE FIRESTORE (adicionado)
-    // =====================================================
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")

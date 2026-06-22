@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.cjstudio.condominio_sociedade_morro_grande.presentation.loginadmin.LoginAdminActivity;
 import com.cjstudio.condominio_sociedade_morro_grande.presentation.loginmorador.LoginMoradorActivity;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +21,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Teste rápido de conexão com o Firestore (apenas log, opcional)
+        // 🔥 INICIALIZA O FIREBASE (obrigatório!)
+        FirebaseApp.initializeApp(this);
+
+        // Teste rápido de conexão com o Firestore
         testarFirestore();
 
         // Aguarda 1.5 segundos e redireciona conforme o perfil
@@ -33,13 +37,12 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 startActivity(new Intent(MainActivity.this, LoginMoradorActivity.class));
             }
-            finish(); // fecha a splash
+            finish();
         }, 1500);
     }
 
     private void testarFirestore() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        // Agora testa a coleção "administradores" (em vez de "usuarios")
         db.collection("administradores").limit(1).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     Log.d(TAG, "✅ Conectado ao Firestore! Administradores encontrados: " +

@@ -2,7 +2,6 @@ package com.cjstudio.condominio_sociedade_morro_grande;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,8 +20,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-
-import com.cjstudio.condominio_sociedade_morro_grande.data.AvisoDAO;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,7 +30,9 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CadastroAvisosActivity extends AppCompatActivity {
 
@@ -41,11 +41,14 @@ public class CadastroAvisosActivity extends AppCompatActivity {
     private LinearLayout layoutAnexos, layoutAnexosExistentes;
     private TextView tvAnexosExistentes;
 
-    private List<String> anexos = new ArrayList<>();
-    private List<String> anexosExistentes = new ArrayList<>();
-    private List<String> anexosRemovidos = new ArrayList<>();
-    private AvisoDAO avisoDAO;
-    private long editarId = -1;
+    private List<String> anexos = new ArrayList<>();          // Novos anexos (caminhos locais)
+    private List<String> anexosExistentes = new ArrayList<>(); // Anexos já salvos (caminhos)
+    private List<String> anexosRemovidos = new ArrayList<>();  // Anexos removidos na edição
+
+    private String editarId = null; // ID do documento no Firestore (String)
+
+    // Firestore
+    private FirebaseFirestore db;
 
     private final ActivityResultLauncher<String[]> selecionarArquivosLauncher =
             registerForActivityResult(new ActivityResultContracts.OpenMultipleDocuments(), uris -> {
@@ -68,6 +71,10 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastro_avisos);
 
+        // Inicializa Firestore
+        db = FirebaseFirestore.getInstance();
+
+        // Bind views
         editDataHora = findViewById(R.id.editDataHora);
         editAssunto = findViewById(R.id.editAssunto);
         editDescricao = findViewById(R.id.editDescricao);
@@ -78,8 +85,7 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         layoutAnexosExistentes = findViewById(R.id.layoutAnexosExistentes);
         tvAnexosExistentes = findViewById(R.id.tvAnexosExistentes);
 
-        avisoDAO = new AvisoDAO(this);
-
+        // Listeners
         editDataHora.setOnClickListener(v -> mostrarDateTimePicker());
 
         buttonSelecionarArquivos.setOnClickListener(v -> {
@@ -97,14 +103,15 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         buttonSalvar.setOnClickListener(v -> salvarAviso());
 
         buttonVoltarLista.setOnClickListener(v -> {
-            startActivity(new Intent(this, ListaAvisosActivity.class));
+            startActivity(new Intent(this, com.cjstudio.condominio_sociedade_morro_grande.ListaAvisosActivity.class));
             finish();
         });
 
+        // Verifica se é edição
         if (getIntent().hasExtra("avisoJSON")) {
             try {
                 JSONObject aviso = new JSONObject(getIntent().getStringExtra("avisoJSON"));
-                editarId = aviso.optLong("id", -1);
+                editarId = aviso.optString("id", null);
                 preencherCampos(aviso);
                 buttonVoltarLista.setVisibility(Button.GONE);
             } catch (Exception e) {
@@ -113,7 +120,7 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         }
     }
 
-    // ==================== MÉTODO LOCAL PARA COPIAR URI ====================
+    // ==================== COPIAR URI PARA ARQUIVO LOCAL ====================
     private File copiarUriParaArquivo(Uri uri) {
         try {
             String fileName = "anexo_" + System.currentTimeMillis();
@@ -139,7 +146,7 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         }
     }
 
-    // ==================== RESTO DO CÓDIGO (SALVAR, ATUALIZAR, etc.) ====================
+    // ==================== SALVAR NO FIRESTORE ====================
     private void salvarAviso() {
         String dataHora = editDataHora.getText().toString().trim();
         String assunto = editAssunto.getText().toString().trim();
@@ -150,56 +157,57 @@ public class CadastroAvisosActivity extends AppCompatActivity {
             return;
         }
 
-        try {
-            JSONObject aviso = new JSONObject();
-            aviso.put("datahora", dataHora);
-            aviso.put("assunto", assunto);
-            aviso.put("descricao", descricao);
-
-            JSONArray jsonAnexos = new JSONArray();
-
-            for (String path : anexosExistentes) {
-                if (!anexosRemovidos.contains(path)) {
-                    jsonAnexos.put(path);
-                }
+        // Monta lista final de anexos (existentes + novos, removendo os excluídos)
+        List<String> anexosFinais = new ArrayList<>();
+        for (String path : anexosExistentes) {
+            if (!anexosRemovidos.contains(path)) {
+                anexosFinais.add(path);
             }
+        }
+        anexosFinais.addAll(anexos); // adiciona os novos
 
-            for (String path : anexos) {
-                jsonAnexos.put(path);
-            }
+        // Converte para JSONArray para manter compatibilidade com o formato anterior
+        JSONArray jsonAnexos = new JSONArray(anexosFinais);
+        String anexosStr = jsonAnexos.toString();
 
-            aviso.put("anexos", jsonAnexos.toString());
+        // Cria o mapa de dados
+        Map<String, Object> avisoMap = new HashMap<>();
+        avisoMap.put("datahora", dataHora);
+        avisoMap.put("assunto", assunto);
+        avisoMap.put("descricao", descricao);
+        avisoMap.put("anexos", anexosStr);
+        avisoMap.put("timestamp", System.currentTimeMillis());
 
-            boolean sucesso;
-            if (editarId != -1) {
-                sucesso = avisoDAO.atualizarAviso(editarId, aviso);
-                if (sucesso) {
-                    Toast.makeText(this, "Aviso atualizado!", Toast.LENGTH_SHORT).show();
-                    removerArquivosExcluidos();
-                }
-            } else {
-                long id = avisoDAO.inserirAviso(aviso);
-                sucesso = id != -1;
-                if (sucesso) Toast.makeText(this, "Aviso salvo!", Toast.LENGTH_SHORT).show();
-            }
-
-            if (sucesso) {
-                limparCampos();
-                if (editarId != -1) {
-                    startActivity(new Intent(this, ListaAvisosActivity.class));
-                    finish();
-                }
-            } else {
-                Toast.makeText(this, "Erro ao salvar aviso.", Toast.LENGTH_SHORT).show();
-            }
-
-        } catch (Exception e) {
-            Log.e("AVISO_ERROR", "Erro: " + e.getMessage());
-            e.printStackTrace();
-            Toast.makeText(this, "Erro ao salvar aviso.", Toast.LENGTH_SHORT).show();
+        if (editarId != null) {
+            // Atualiza documento existente
+            db.collection("avisos")
+                    .document(editarId)
+                    .update(avisoMap)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Aviso atualizado!", Toast.LENGTH_SHORT).show();
+                        removerArquivosExcluidos();
+                        limparCampos();
+                        startActivity(new Intent(this, com.cjstudio.condominio_sociedade_morro_grande.ListaAvisosActivity.class));
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Erro ao atualizar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            // Novo documento
+            db.collection("avisos")
+                    .add(avisoMap)
+                    .addOnSuccessListener(documentReference -> {
+                        Toast.makeText(this, "Aviso salvo!", Toast.LENGTH_SHORT).show();
+                        limparCampos();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Erro ao salvar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
         }
     }
 
+    // ==================== REMOVER ARQUIVOS EXCLUÍDOS ====================
     private void removerArquivosExcluidos() {
         for (String path : anexosRemovidos) {
             File arquivo = new File(path);
@@ -210,6 +218,7 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         anexosRemovidos.clear();
     }
 
+    // ==================== LIMPAR CAMPOS ====================
     private void limparCampos() {
         editDataHora.setText("");
         editAssunto.setText("");
@@ -219,10 +228,11 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         anexosRemovidos.clear();
         atualizarAnexos();
         atualizarAnexosExistentes();
-        editarId = -1;
-        buttonVoltarLista.setVisibility(Button.VISIBLE);
+        editarId = null;
+        buttonVoltarLista.setVisibility(View.VISIBLE);
     }
 
+    // ==================== ATUALIZAR UI DOS ANEXOS ====================
     private void atualizarAnexos() {
         layoutAnexos.removeAllViews();
         for (String path : anexos) {
@@ -320,6 +330,7 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         }
     }
 
+    // ==================== DATE/TIME PICKER ====================
     private void mostrarDateTimePicker() {
         final Calendar calendar = Calendar.getInstance();
         new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
@@ -332,6 +343,7 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
+    // ==================== PREENCHER CAMPOS NA EDIÇÃO ====================
     private void preencherCampos(JSONObject aviso) {
         try {
             editDataHora.setText(aviso.optString("datahora", ""));
@@ -356,9 +368,5 @@ public class CadastroAvisosActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (avisoDAO != null) avisoDAO.fechar();
-    }
+    // ==================== REMOVIDO O MÉTODO fechar() - NÃO É MAIS NECESSÁRIO ====================
 }
