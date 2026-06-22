@@ -16,7 +16,6 @@
         android:paddingBottom="16dp"
         tools:context=".DashBoardActivity">
 
-        <!-- Título centralizado -->
         <TextView
             android:id="@+id/textTitulo"
             android:layout_width="0dp"
@@ -32,7 +31,6 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="4dp"/>
 
-        <!-- Guideline vertical (50%) para dividir as duas colunas -->
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
             android:layout_width="wrap_content"
@@ -40,9 +38,7 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.5" />
 
-        <!-- ========== BOTÕES DE ADMIN (8 botões em 4 linhas) ========== -->
-
-        <!-- Linha 1 -->
+        <!-- ========== BOTÕES ADMIN ========== -->
         <Button
             android:id="@+id/buttonAdministradores"
             android:layout_width="0dp"
@@ -79,7 +75,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textTitulo" />
 
-        <!-- Linha 2 -->
         <Button
             android:id="@+id/buttonDespesas"
             android:layout_width="0dp"
@@ -116,7 +111,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/buttonAssembleias" />
 
-        <!-- Linha 3 -->
         <Button
             android:id="@+id/buttonCadastroMoradores"
             android:layout_width="0dp"
@@ -153,7 +147,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/buttonAvisos" />
 
-        <!-- Linha 4 -->
         <Button
             android:id="@+id/buttonManutencao"
             android:layout_width="0dp"
@@ -190,7 +183,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/buttonRegistroOcorrencias" />
 
-        <!-- ========== ESPAÇO EXTRA (20dp) ========== -->
         <View
             android:id="@+id/espacoMorador"
             android:layout_width="0dp"
@@ -199,18 +191,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- ========== BOTÕES PARA MORADOR (duas colunas) ========== -->
-
-        <!-- Linha 1: Lista de Assembleias (esquerda) -->
+        <!-- ========== BOTÕES DO MORADOR (apenas os que ficam na Dashboard) ========== -->
+        <!-- Prestação de Contas (esquerda) -->
         <Button
-            android:id="@+id/buttonListaAssembleias"
+            android:id="@+id/buttonListaDespesas"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:backgroundTint="#6E747E"
-            android:text="Lista de Assembleias"
+            android:text="Prestação de Contas"
             android:textSize="13sp"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
@@ -220,16 +211,16 @@
             app:layout_constraintEnd_toStartOf="@id/guideline"
             app:layout_constraintTop_toBottomOf="@id/espacoMorador" />
 
-        <!-- Linha 1: Prestação de Contas (direita) -->
+        <!-- Avisos (direita) -->
         <Button
-            android:id="@+id/buttonListaDespesas"
+            android:id="@+id/buttonAvisosMorador"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="8dp"
             android:backgroundTint="#6E747E"
-            android:text="Prestação de Contas"
+            android:text="Avisos"
             android:textSize="13sp"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
@@ -239,26 +230,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/espacoMorador" />
 
-        <!-- Linha 2: Avisos (centralizado, largura total) -->
-        <Button
-            android:id="@+id/buttonListaAvisos"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="#6E747E"
-            android:text="Avisos"
-            android:textSize="14sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:letterSpacing="0.03"
-            app:cornerRadius="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttonListaAssembleias" />
-
-        <!-- ========== BOTÃO "LISTAS" (final, largura total, apenas admin) ========== -->
+        <!-- ========== BOTÃO "LISTAS" (ADMIN E MORADOR) ========== -->
+        <!-- Agora ocupa a largura total e fica abaixo dos botões acima -->
         <Button
             android:id="@+id/buttonListas"
             android:layout_width="0dp"
@@ -275,7 +248,7 @@
             app:cornerRadius="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttonListaAvisos"
+            app:layout_constraintTop_toBottomOf="@id/buttonAvisosMorador"
             android:layout_marginBottom="0dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

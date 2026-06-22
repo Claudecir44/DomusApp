@@ -12,7 +12,6 @@ public class DashBoardViewModel extends AndroidViewModel {
 
     private final MutableLiveData<com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState> uiState = new MutableLiveData<>();
     private final MutableLiveData<NavigationEvent> navigationEvent = new MutableLiveData<>();
-
     private String currentTipoUsuario;
     private String currentMoradorNome;
 
@@ -21,30 +20,22 @@ public class DashBoardViewModel extends AndroidViewModel {
         uiState.setValue(com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState.loading());
     }
 
-    public LiveData<com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState> getUiState() {
-        return uiState;
-    }
-
-    public LiveData<NavigationEvent> getNavigationEvent() {
-        return navigationEvent;
-    }
+    public LiveData<com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState> getUiState() { return uiState; }
+    public LiveData<NavigationEvent> getNavigationEvent() { return navigationEvent; }
 
     public void loadUserPermissions(String tipoUsuario, String moradorNome) {
         this.currentTipoUsuario = tipoUsuario;
         this.currentMoradorNome = moradorNome;
-
         ButtonVisibility visibility = getButtonVisibility();
-
         uiState.setValue(com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState.ready(visibility, tipoUsuario, moradorNome));
     }
 
     private ButtonVisibility getButtonVisibility() {
         ButtonVisibility visibility = new ButtonVisibility();
-
         boolean isAdmin = "admin".equals(currentTipoUsuario);
         boolean isMorador = "morador".equals(currentTipoUsuario);
 
-        // Botões de admin (visíveis apenas para admin)
+        // Admin – todos os botões de admin
         visibility.setVisible("administradores", isAdmin);
         visibility.setVisible("assembleias", isAdmin);
         visibility.setVisible("despesas", isAdmin);
@@ -54,17 +45,14 @@ public class DashBoardViewModel extends AndroidViewModel {
         visibility.setVisible("manutencao", isAdmin);
         visibility.setVisible("funcionarios", isAdmin);
 
-        // Botão "Listas" – apenas admin
-        visibility.setVisible("listas", isAdmin);
-
-        // ========== BOTÕES PARA MORADOR ==========
-        // 🔥 ADICIONADO: Lista de Assembleias para morador
-        visibility.setVisible("listaAssembleias", isMorador);
+        // Morador – apenas os que ficam na Dashboard (sem listaAssembleias)
         visibility.setVisible("listaDespesas", isMorador);
-        visibility.setVisible("listaAvisos", isMorador);
+        visibility.setVisible("avisosMorador", isMorador);
 
-        // (Opcional) Se quiser que o admin também veja esses botões diretamente, use isAdmin || isMorador
-        // Mas como admin tem o botão "Listas", não é necessário.
+        // "Listas" – visível para ambos
+        visibility.setVisible("listas", isAdmin || isMorador);
+
+        // O botão "listaAssembleias" não está no layout, portanto não definimos visibilidade
 
         return visibility;
     }
@@ -78,6 +66,7 @@ public class DashBoardViewModel extends AndroidViewModel {
 
     private NavigationTarget getNavigationTarget(String buttonKey) {
         switch (buttonKey) {
+            // Admin
             case "administradores": return NavigationTarget.ADMINISTRADORES;
             case "assembleias": return NavigationTarget.REGISTRO_ASSEMBLEIAS;
             case "despesas": return NavigationTarget.REGISTRO_DESPESAS;
@@ -87,10 +76,10 @@ public class DashBoardViewModel extends AndroidViewModel {
             case "manutencao": return NavigationTarget.MANUTENCAO;
             case "funcionarios": return NavigationTarget.FUNCIONARIOS;
             case "listas": return NavigationTarget.LISTAS;
-            // Botões para morador:
-            case "listaAssembleias": return NavigationTarget.LISTA_ASSEMBLEIAS;
+            // Morador
             case "listaDespesas": return NavigationTarget.LISTA_DESPESAS;
-            case "listaAvisos": return NavigationTarget.LISTA_AVISOS;
+            case "avisosMorador": return NavigationTarget.LISTA_AVISOS;
+            // O case "listaAssembleias" não é mais usado na Dashboard
             default: return null;
         }
     }
@@ -108,19 +97,16 @@ public class DashBoardViewModel extends AndroidViewModel {
         LISTA_ASSEMBLEIAS,
         LISTA_DESPESAS,
         LISTA_AVISOS,
-        // Mantidos para compatibilidade (não usados diretamente)
         LISTA_MORADORES
     }
 
     public static class NavigationEvent {
         private final NavigationTarget target;
         private final String tipoUsuario;
-
         public NavigationEvent(NavigationTarget target, String tipoUsuario) {
             this.target = target;
             this.tipoUsuario = tipoUsuario;
         }
-
         public NavigationTarget getTarget() { return target; }
         public String getTipoUsuario() { return tipoUsuario; }
     }

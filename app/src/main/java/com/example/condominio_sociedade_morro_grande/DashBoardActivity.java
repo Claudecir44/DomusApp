@@ -50,7 +50,7 @@ public class DashBoardActivity extends AppCompatActivity {
     }
 
     private void initializeButtons() {
-        // Botões de admin (presentes no layout)
+        // Admin
         buttons.put("administradores", findViewById(R.id.buttonAdministradores));
         buttons.put("assembleias", findViewById(R.id.buttonAssembleias));
         buttons.put("despesas", findViewById(R.id.buttonDespesas));
@@ -60,14 +60,14 @@ public class DashBoardActivity extends AppCompatActivity {
         buttons.put("manutencao", findViewById(R.id.buttonManutencao));
         buttons.put("funcionarios", findViewById(R.id.buttonFuncionarios));
 
-        // Botões para morador
+        // Botões do morador (apenas os que ficam na Dashboard)
         buttons.put("listaDespesas", findViewById(R.id.buttonListaDespesas));
-        buttons.put("listaAvisos", findViewById(R.id.buttonListaAvisos));
+        buttons.put("avisosMorador", findViewById(R.id.buttonAvisosMorador));
 
-        // 🔥 NOVO BOTÃO "LISTAS"
+        // Botão "Listas" (admin e morador)
         buttons.put("listas", findViewById(R.id.buttonListas));
 
-        // Removidos: backup, lista (não estão mais no layout)
+        // O botão "listaAssembleias" NÃO está mais no mapa
 
         for (Map.Entry<String, Button> entry : buttons.entrySet()) {
             entry.getValue().setOnClickListener(v ->
@@ -78,8 +78,7 @@ public class DashBoardActivity extends AppCompatActivity {
     private void updateUi(com.cjstudio.condominio_sociedade_morro_grande.presentation.dashboard.DashBoardUiState uiState) {
         if (uiState.isLoading()) return;
         if (uiState.getErrorMessage() != null) {
-            Toast.makeText(this, uiState.getErrorMessage(),
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, uiState.getErrorMessage(), Toast.LENGTH_LONG).show();
             return;
         }
         ButtonVisibility visibility = uiState.getButtonVisibility();
@@ -123,6 +122,7 @@ public class DashBoardActivity extends AppCompatActivity {
                 intent = new Intent(this, CadastroAvisosActivity.class);
                 break;
             case LISTA_ASSEMBLEIAS:
+                // Este case ainda é mantido, mas não será chamado pela Dashboard (só pela ListasActivity)
                 intent = new Intent(this, ListaAssembleiasActivity.class);
                 intent.putExtra("tipo_usuario", event.getTipoUsuario());
                 break;
@@ -134,7 +134,7 @@ public class DashBoardActivity extends AppCompatActivity {
                 intent = new Intent(this, ListaAvisosActivity.class);
                 intent.putExtra("tipo_usuario", event.getTipoUsuario());
                 break;
-            case LISTAS: // novo case
+            case LISTAS:
                 intent = new Intent(this, ListasActivity.class);
                 break;
             default:
