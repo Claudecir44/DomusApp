@@ -15,8 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 

@@ -13,7 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 import com.cjstudio.condominio_sociedade_morro_grande.domain.model.Funcionario;
 
 import java.util.List;

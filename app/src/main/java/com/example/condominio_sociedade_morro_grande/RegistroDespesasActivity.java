@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 import com.cjstudio.condominio_sociedade_morro_grande.data.DespesaDAO;
 import com.cjstudio.condominio_sociedade_morro_grande.domain.model.Despesa;
 
@@ -52,7 +52,7 @@ public class RegistroDespesasActivity extends AppCompatActivity {
         btnSalvar.setOnClickListener(v -> salvarDespesa());
 
         btnLista.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ListaDespesasActivity.class);
+            Intent intent = new Intent(this, com.cjstudio.condominio_sociedade_morro_grande.ListaDespesasActivity.class);
             startActivity(intent);
         });
 

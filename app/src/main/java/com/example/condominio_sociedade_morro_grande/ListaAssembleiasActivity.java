@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 import com.cjstudio.condominio_sociedade_morro_grande.data.AssembleiaDAO;
 import com.cjstudio.condominio_sociedade_morro_grande.AssembleiaAdapter;  // corrigido: pacote raiz
 import com.cjstudio.condominio_sociedade_morro_grande.AnexosAdapter;      // corrigido: pacote raiz

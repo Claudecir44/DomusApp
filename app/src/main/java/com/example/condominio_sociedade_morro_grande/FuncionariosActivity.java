@@ -6,7 +6,7 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 
 public class FuncionariosActivity extends AppCompatActivity {
 
@@ -19,12 +19,12 @@ public class FuncionariosActivity extends AppCompatActivity {
         Button btnListaFuncionarios = findViewById(R.id.buttonListaFuncionarios);
 
         btnCadastroFuncionario.setOnClickListener(v -> {
-            Intent intent = new Intent(FuncionariosActivity.this, CadastroFuncionarioActivity.class);
+            Intent intent = new Intent(FuncionariosActivity.this, com.cjstudio.condominio_sociedade_morro_grande.CadastroFuncionarioActivity.class);
             startActivity(intent);
         });
 
         btnListaFuncionarios.setOnClickListener(v -> {
-            Intent intent = new Intent(FuncionariosActivity.this, ListaFuncionariosActivity.class);
+            Intent intent = new Intent(FuncionariosActivity.this, com.cjstudio.condominio_sociedade_morro_grande.ListaFuncionariosActivity.class);
             startActivity(intent);
         });
     }

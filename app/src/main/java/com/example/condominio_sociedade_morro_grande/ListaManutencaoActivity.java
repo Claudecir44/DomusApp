@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 import com.cjstudio.condominio_sociedade_morro_grande.data.ManutencaoDAO;
 import com.cjstudio.condominio_sociedade_morro_grande.domain.model.Manutencao;
 import com.cjstudio.condominio_sociedade_morro_grande.ManutencaoAdapter; // Correção: pacote raiz
@@ -46,7 +46,7 @@ public class ListaManutencaoActivity extends AppCompatActivity {
         adapter = new ManutencaoAdapter(this, listaManutencoes, new ManutencaoAdapter.OnItemClickListener() {
             @Override
             public void onEditar(int position) {
-                Intent intent = new Intent(ListaManutencaoActivity.this, CadastroManutencaoActivity.class);
+                Intent intent = new Intent(ListaManutencaoActivity.this, com.cjstudio.condominio_sociedade_morro_grande.CadastroManutencaoActivity.class);
                 intent.putExtra("index", position);
                 startActivity(intent);
             }

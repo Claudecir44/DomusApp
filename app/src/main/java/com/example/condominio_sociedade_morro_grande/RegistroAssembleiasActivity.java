@@ -2,7 +2,6 @@ package com.cjstudio.condominio_sociedade_morro_grande;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,9 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
 import com.cjstudio.condominio_sociedade_morro_grande.data.AssembleiaDAO;
-import com.cjstudio.condominio_sociedade_morro_grande.AnexosAdapter; // Pacote raiz
 
 import org.json.JSONArray;
 import org.json.JSONObject;

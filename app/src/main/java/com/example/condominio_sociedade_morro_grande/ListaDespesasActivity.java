@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 import com.cjstudio.condominio_sociedade_morro_grande.data.DespesaDAO;
 import com.cjstudio.condominio_sociedade_morro_grande.domain.model.Despesa;
 

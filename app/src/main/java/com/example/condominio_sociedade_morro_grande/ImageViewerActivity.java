@@ -7,7 +7,7 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.cjstudio.condominio_sociedade_morro_grande.R;
+
 
 import java.io.File;
 
